@@ -58,20 +58,6 @@ export function visitorTag(visitorId: string): string {
   return visitorId.replace(/-/g, "").slice(-4).toUpperCase();
 }
 
-export function localRunFromPress(
-  press: ArenaPress,
-  roundId: number
-): RunRecord {
-  return {
-    id: `${roundId}-${press.timestamp}-${press.visitorTag}`,
-    status: "success",
-    awardedType: press.type,
-    pressedAtSecondsRemaining: press.secondsRemaining,
-    secondsWaited: press.secondsWaited,
-    timestamp: press.timestamp
-  };
-}
-
 export function fallbackArenaState(visitorId: string): ArenaState {
   return {
     status: "idle",

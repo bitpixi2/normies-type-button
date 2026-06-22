@@ -1,6 +1,5 @@
 import {
   Activity,
-  History,
   Play,
   RotateCcw,
   Timer,
@@ -8,16 +7,13 @@ import {
   Users
 } from "lucide-react";
 import type { ReactNode } from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ROUND_SECONDS,
   TYPE_WINDOWS,
   formatClock,
   getSecondsRemainingUntil,
-  getTypeForSecondsRemaining,
-  summarizeHistory,
-  type NormieType,
-  type RunRecord
+  getTypeForSecondsRemaining
 } from "./game";
 import {
   fallbackArenaState,
@@ -25,7 +21,6 @@ import {
   pressArena,
   startArena,
   ensureVisitorId,
-  localRunFromPress,
   visitorTag,
   type ArenaState
 } from "./arenaApi";
@@ -34,7 +29,6 @@ import {
   fetchTypeProfiles,
   type TypeProfile
 } from "./normiesApi";
-import { clearRunHistory, loadRunHistory, prependRunRecord } from "./storage";
 
 const POLL_MS = 1000;
 
@@ -50,8 +44,6 @@ export function App() {
   const [nowMs, setNowMs] = useState(Date.now());
   const [apiMessage, setApiMessage] = useState("Connecting");
   const [isBusy, setIsBusy] = useState(false);
-  const [history, setHistory] = useState<RunRecord[]>(() => loadRunHistory());
-  const recordedRunIds = useRef(new Set(history.map((run) => run.id)));
 
   useEffect(() => {
     let cancelled = false;
@@ -88,7 +80,6 @@ export function App() {
         if (!cancelled) {
           setArena(state);
           setApiMessage("Multiplayer live");
-          recordVisitorRun(state);
         }
       } catch {
         if (!cancelled) {
@@ -119,7 +110,6 @@ export function App() {
     arena.status === "active"
       ? getTypeForSecondsRemaining(displayedRemaining)
       : null;
-  const summary = useMemo(() => summarizeHistory(history), [history]);
   const progress =
     arena.status === "active"
       ? ((ROUND_SECONDS - displayedRemaining) / ROUND_SECONDS) * 100
@@ -135,15 +125,6 @@ export function App() {
         ? RotateCcw
         : Play;
 
-  function recordVisitorRun(state: ArenaState) {
-    if (!state.visitorRun || recordedRunIds.current.has(state.visitorRun.id)) {
-      return;
-    }
-
-    recordedRunIds.current.add(state.visitorRun.id);
-    setHistory((current) => prependRunRecord(state.visitorRun!, current));
-  }
-
   const handleAction = async () => {
     if (isBusy || (arena.status === "active" && arena.visitorPressed)) {
       return;
@@ -157,26 +138,11 @@ export function App() {
           : await startArena(visitorId);
       setArena(state);
       setApiMessage("Multiplayer live");
-
-      if (arena.status === "active" && state.lastPress) {
-        const run = localRunFromPress(state.lastPress, state.roundId);
-        if (!recordedRunIds.current.has(run.id)) {
-          recordedRunIds.current.add(run.id);
-          setHistory((current) => prependRunRecord(run, current));
-        }
-      }
-      recordVisitorRun(state);
     } catch {
       setApiMessage("Shared timer offline");
     } finally {
       setIsBusy(false);
     }
-  };
-
-  const resetHistory = () => {
-    clearRunHistory();
-    recordedRunIds.current.clear();
-    setHistory([]);
   };
 
   return (
@@ -322,54 +288,6 @@ export function App() {
           </div>
         </section>
 
-        <section className="scoreboard local-scoreboard" aria-label="Local history">
-          <div className="score-heading">
-            <div>
-              <span className="eyebrow">Local</span>
-              <h2>Your History</h2>
-            </div>
-            <button
-              className="icon-button"
-              type="button"
-              onClick={resetHistory}
-              aria-label="Clear history"
-              disabled={history.length === 0}
-            >
-              <RotateCcw aria-hidden="true" size={18} />
-            </button>
-          </div>
-
-          <div className="metric-row">
-            <Metric
-              icon={<Trophy aria-hidden="true" size={18} />}
-              label="Best"
-              value={
-                summary.bestRun?.awardedType
-                  ? `${summary.bestRun.awardedType} ${formatClock(
-                      summary.bestRun.secondsWaited
-                    )}`
-                  : "--"
-              }
-            />
-            <Metric
-              icon={<History aria-hidden="true" size={18} />}
-              label="Runs"
-              value={summary.totalRuns.toString()}
-            />
-          </div>
-
-          <div className="recent-list">
-            {history.slice(0, 5).map((run) => (
-              <div className="recent-run" key={run.id}>
-                <span className="run-dot" />
-                <strong>{run.awardedType ?? "None"}</strong>
-                <span>{formatClock(run.secondsWaited)}</span>
-                <span>{formatDate(run.timestamp)}</span>
-              </div>
-            ))}
-            {history.length === 0 && <div className="empty-state">No runs</div>}
-          </div>
-        </section>
       </main>
     </div>
   );
@@ -398,11 +316,4 @@ function Metric({
       <strong>{value}</strong>
     </div>
   );
-}
-
-function formatDate(timestamp: string): string {
-  return new Intl.DateTimeFormat(undefined, {
-    hour: "numeric",
-    minute: "2-digit"
-  }).format(new Date(timestamp));
 }

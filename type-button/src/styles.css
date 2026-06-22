@@ -317,10 +317,6 @@ h2 {
   padding: 18px;
 }
 
-.local-scoreboard {
-  grid-column: 2;
-}
-
 .score-heading {
   display: flex;
   align-items: center;
@@ -411,9 +407,6 @@ h2 {
     grid-template-columns: 1fr;
   }
 
-  .local-scoreboard {
-    grid-column: auto;
-  }
 }
 
 @media (max-width: 640px) {
