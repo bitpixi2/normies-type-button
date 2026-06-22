@@ -1,5 +1,7 @@
 const ROUND_SECONDS = 60;
 const ROUND_MS = ROUND_SECONDS * 1000;
+const HISTORY_LIMIT = 24;
+const HISTORY_STORAGE_KEY = "pressHistory";
 const TYPES = ["Human", "Cat", "Alien", "Agent", "Zombie"];
 const INITIAL_COUNTS = {
   Human: 0,
@@ -111,6 +113,7 @@ export class ArenaObject {
     }
 
     const press = {
+      roundId: round.roundId,
       type,
       secondsRemaining: remainingSeconds,
       secondsWaited: ROUND_SECONDS - remainingSeconds,
@@ -130,8 +133,9 @@ export class ArenaObject {
     };
 
     await this.state.storage.put(pressKey, press);
+    const recentPresses = await this.addHistoryPress(press);
     await this.saveRound(nextRound);
-    return this.stateForVisitor(nextRound, visitorId, now);
+    return this.stateForVisitor(nextRound, visitorId, now, recentPresses);
   }
 
   async readState(visitorId) {
@@ -144,11 +148,15 @@ export class ArenaObject {
     return this.stateForVisitor(round, visitorId, now);
   }
 
-  async stateForVisitor(round, visitorId, now) {
+  async stateForVisitor(round, visitorId, now, recentPresses = null) {
     const visitorPress = visitorId
       ? await this.state.storage.get(pressStorageKey(round.roundId, visitorId))
       : null;
     const remaining = round.expiresAt ? secondsRemaining(round.expiresAt, now) : ROUND_SECONDS;
+    const history = normalizeHistory(
+      recentPresses || (await this.getHistory()),
+      round
+    );
 
     return {
       status: round.status,
@@ -161,6 +169,7 @@ export class ArenaObject {
       totalPresses: round.totalPresses,
       pressCounts: round.pressCounts,
       lastPress: round.lastPress,
+      recentPresses: history,
       visitorPressed: Boolean(visitorPress),
       visitorRun: visitorPress
         ? {
@@ -181,6 +190,19 @@ export class ArenaObject {
 
   async saveRound(round) {
     await this.state.storage.put("round", round);
+  }
+
+  async getHistory() {
+    return (await this.state.storage.get(HISTORY_STORAGE_KEY)) || [];
+  }
+
+  async addHistoryPress(press) {
+    const nextHistory = normalizeHistory(
+      [press, ...(await this.getHistory())],
+      { roundId: press.roundId }
+    ).slice(0, HISTORY_LIMIT);
+    await this.state.storage.put(HISTORY_STORAGE_KEY, nextHistory);
+    return nextHistory;
   }
 }
 
@@ -237,6 +259,29 @@ function normalizeRound(round, now) {
   }
 
   return { round: normalized, changed: false };
+}
+
+function normalizeHistory(history, round) {
+  if (!Array.isArray(history)) return [];
+
+  return history
+    .filter((press) => press && typeof press === "object")
+    .map((press) => ({
+      roundId:
+        typeof press.roundId === "number" ? press.roundId : round.roundId || 0,
+      type: TYPES.includes(press.type) ? press.type : "Human",
+      secondsRemaining:
+        typeof press.secondsRemaining === "number" ? press.secondsRemaining : 0,
+      secondsWaited:
+        typeof press.secondsWaited === "number" ? press.secondsWaited : 0,
+      timestamp:
+        typeof press.timestamp === "string"
+          ? press.timestamp
+          : new Date(0).toISOString(),
+      visitorTag:
+        typeof press.visitorTag === "string" ? press.visitorTag : "----"
+    }))
+    .slice(0, HISTORY_LIMIT);
 }
 
 function typeForSecondsRemaining(seconds) {

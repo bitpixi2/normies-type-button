@@ -20,6 +20,7 @@ export const ARENA_API_BASE = (configuredApiBase || DEFAULT_API_BASE).replace(
 export type ArenaStatus = "idle" | "active" | "expired";
 
 export type ArenaPress = {
+  roundId: number;
   type: NormieType;
   secondsRemaining: number;
   secondsWaited: number;
@@ -37,6 +38,7 @@ export type ArenaState = {
   totalPresses: number;
   pressCounts: Record<NormieType, number>;
   lastPress: ArenaPress | null;
+  recentPresses: ArenaPress[];
   visitorPressed: boolean;
   visitorRun: RunRecord | null;
 };
@@ -75,6 +77,7 @@ export function fallbackArenaState(visitorId: string): ArenaState {
       Zombie: 0
     },
     lastPress: null,
+    recentPresses: [],
     visitorPressed: false,
     visitorRun: null
   };

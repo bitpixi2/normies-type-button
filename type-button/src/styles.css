@@ -93,7 +93,8 @@ h2 {
 .eyebrow,
 .stack-row span,
 .metric span,
-.recent-run span,
+.history-heading,
+.history-run span,
 .empty-state {
   color: var(--muted);
 }
@@ -446,22 +447,57 @@ h2 {
   font-variant-numeric: tabular-nums;
 }
 
-.recent-list {
+.history-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 2px;
+}
+
+.history-heading span:last-child {
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  text-transform: uppercase;
+}
+
+.history-list {
   display: grid;
   gap: 8px;
 }
 
-.recent-run,
+.history-run,
 .empty-state {
   display: grid;
-  grid-template-columns: 12px minmax(72px, 1fr) 64px 72px;
+  grid-template-columns: 12px minmax(74px, 1fr) auto;
   align-items: center;
   gap: 10px;
-  min-height: 38px;
+  min-height: 48px;
   padding: 9px 10px;
   border: 2px solid var(--ink);
   background: #ffffff;
   font-size: 0.9rem;
+}
+
+.history-main,
+.history-times {
+  display: grid;
+  gap: 2px;
+}
+
+.history-main strong,
+.history-times span {
+  font-variant-numeric: tabular-nums;
+}
+
+.history-main span,
+.history-times span {
+  font-size: 0.78rem;
+}
+
+.history-times {
+  justify-items: end;
+  text-align: right;
 }
 
 .empty-state {
@@ -568,11 +604,12 @@ h2 {
     height: 26px;
   }
 
-  .recent-run {
-    grid-template-columns: 12px minmax(66px, 1fr) 58px;
+  .history-run {
+    grid-template-columns: 12px minmax(66px, 1fr) auto;
   }
 
-  .recent-run span:last-child {
-    display: none;
+  .history-main span,
+  .history-times span {
+    font-size: 0.74rem;
   }
 }

@@ -116,6 +116,15 @@ export function App() {
       ? ((ROUND_SECONDS - displayedRemaining) / ROUND_SECONDS) * 100
       : 0;
   const ownType = arena.visitorRun?.awardedType ?? null;
+  const recentPresses = useMemo(
+    () =>
+      arena.recentPresses?.length > 0
+        ? arena.recentPresses.slice(0, 8)
+        : arena.lastPress
+          ? [arena.lastPress]
+          : [],
+    [arena.lastPress, arena.recentPresses]
+  );
   const actionLabel = buttonLabel(arena);
   const actionIcon =
     arena.status === "active"
@@ -137,7 +146,8 @@ export function App() {
         totalPresses: arena.totalPresses,
         visitorPressed: arena.visitorPressed,
         visitorType: ownType,
-        lastPress: arena.lastPress
+        lastPress: arena.lastPress,
+        recentPresses
       });
 
     window.render_game_to_text = renderGameToText;
@@ -146,7 +156,7 @@ export function App() {
         delete window.render_game_to_text;
       }
     };
-  }, [activeType, arena, displayedRemaining, ownType]);
+  }, [activeType, arena, displayedRemaining, ownType, recentPresses]);
 
   const handleAction = async () => {
     if (isBusy || (arena.status === "active" && arena.visitorPressed)) {
@@ -309,16 +319,33 @@ export function App() {
             />
           </div>
 
-          <div className="recent-list">
-            {arena.lastPress && (
-              <div className="recent-run">
+          <div className="history-heading">
+            <span className="eyebrow">Live History</span>
+            <span>wait / left</span>
+          </div>
+
+          <div className="history-list">
+            {recentPresses.map((press, index) => (
+              <div
+                className="history-run"
+                key={`${press.roundId ?? arena.roundId}-${press.timestamp}-${press.visitorTag}-${index}`}
+              >
                 <span className="run-dot" />
-                <strong>{arena.lastPress.type}</strong>
-                <span>{formatClock(arena.lastPress.secondsWaited)}</span>
-                <span>#{arena.lastPress.visitorTag}</span>
+                <div className="history-main">
+                  <strong>{press.type}</strong>
+                  <span>
+                    R{press.roundId ?? arena.roundId} #{press.visitorTag}
+                  </span>
+                </div>
+                <div className="history-times">
+                  <span>{formatClock(press.secondsWaited)} wait</span>
+                  <span>{formatClock(press.secondsRemaining)} left</span>
+                </div>
               </div>
+            ))}
+            {recentPresses.length === 0 && (
+              <div className="empty-state">No presses</div>
             )}
-            {!arena.lastPress && <div className="empty-state">No presses</div>}
           </div>
         </section>
 
