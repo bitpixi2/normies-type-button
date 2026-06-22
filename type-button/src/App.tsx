@@ -1,11 +1,3 @@
-import {
-  Activity,
-  Play,
-  RotateCcw,
-  Timer,
-  Trophy,
-  Users
-} from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -29,6 +21,12 @@ import {
   fetchTypeProfiles,
   type TypeProfile
 } from "./normiesApi";
+import {
+  PixelArrow,
+  PixelIcon,
+  StackedButtonSprite,
+  TypeGlyph
+} from "./pixelSprites";
 
 const POLL_MS = 1000;
 
@@ -116,14 +114,36 @@ export function App() {
       : 0;
   const ownType = arena.visitorRun?.awardedType ?? null;
   const actionLabel = buttonLabel(arena);
-  const ActionIcon =
+  const actionIcon =
     arena.status === "active"
       ? arena.visitorPressed
-        ? Trophy
-        : Timer
+        ? "trophy"
+        : "timer"
       : arena.status === "expired"
-        ? RotateCcw
-        : Play;
+        ? "revive"
+        : "play";
+
+  useEffect(() => {
+    const renderGameToText = () =>
+      JSON.stringify({
+        surface: "HTML UI, origin at top-left, x right, y down",
+        status: arena.status,
+        roundId: arena.roundId,
+        currentType: activeType,
+        displayedRemaining,
+        totalPresses: arena.totalPresses,
+        visitorPressed: arena.visitorPressed,
+        visitorType: ownType,
+        lastPress: arena.lastPress
+      });
+
+    window.render_game_to_text = renderGameToText;
+    return () => {
+      if (window.render_game_to_text === renderGameToText) {
+        delete window.render_game_to_text;
+      }
+    };
+  }, [activeType, arena, displayedRemaining, ownType]);
 
   const handleAction = async () => {
     if (isBusy || (arena.status === "active" && arena.visitorPressed)) {
@@ -149,7 +169,9 @@ export function App() {
     <div className="app">
       <header className="topbar">
         <div className="brand-lockup">
-          <div className="brand-mark">N</div>
+          <div className="brand-mark">
+            <PixelIcon name="button" />
+          </div>
           <div>
             <h1>Normies Type Button</h1>
             <p>Shared 5:00 experiment</p>
@@ -187,15 +209,18 @@ export function App() {
                   >
                     {isActive && (
                       <span className="stack-arrow" aria-hidden="true">
-                        {"->"}
+                        <PixelArrow />
                       </span>
                     )}
-                    <img
-                      src={profile?.imageUrl}
-                      alt={`Normie ${profile?.representativeId ?? ""}`}
-                      width="48"
-                      height="48"
-                    />
+                    <div className="normie-tile">
+                      <img
+                        src={profile?.imageUrl}
+                        alt={`Normie ${profile?.representativeId ?? ""}`}
+                        width="48"
+                        height="48"
+                      />
+                      <TypeGlyph className="type-glyph" type={window.type} />
+                    </div>
                     <strong>{window.type}</strong>
                     <span>
                       {formatClock(window.maxRemaining)}-
@@ -224,8 +249,14 @@ export function App() {
                   isBusy || (arena.status === "active" && arena.visitorPressed)
                 }
               >
-                <ActionIcon aria-hidden="true" size={28} strokeWidth={2.2} />
-                <span>{isBusy ? "Sync" : actionLabel}</span>
+                <StackedButtonSprite
+                  className="button-stack-sprite"
+                  pressed={arena.status === "active" && arena.visitorPressed}
+                />
+                <span className="button-action-label">
+                  <PixelIcon name={actionIcon} />
+                  <span>{isBusy ? "Sync" : actionLabel}</span>
+                </span>
               </button>
             </div>
           </div>
@@ -248,17 +279,17 @@ export function App() {
               <span className="eyebrow">Shared</span>
               <h2>Round {arena.roundId}</h2>
             </div>
-            <Users aria-hidden="true" size={24} />
+            <PixelIcon className="heading-icon" name="users" />
           </div>
 
           <div className="metric-row">
             <Metric
-              icon={<Activity aria-hidden="true" size={18} />}
+              icon={<PixelIcon name="activity" />}
               label="Presses"
               value={arena.totalPresses.toString()}
             />
             <Metric
-              icon={<Timer aria-hidden="true" size={18} />}
+              icon={<PixelIcon name="timer" />}
               label="Last"
               value={
                 arena.lastPress
@@ -269,7 +300,7 @@ export function App() {
               }
             />
             <Metric
-              icon={<Trophy aria-hidden="true" size={18} />}
+              icon={<PixelIcon name="trophy" />}
               label="You"
               value={ownType ?? "--"}
             />

@@ -4,5 +4,6 @@ dist
 .wrangler
 .playwright-cli
 coverage
+output
 *.local
 .DS_Store
