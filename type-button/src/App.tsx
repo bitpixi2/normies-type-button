@@ -4,24 +4,31 @@ import {
   Play,
   RotateCcw,
   Timer,
-  Trophy
+  Trophy,
+  Users
 } from "lucide-react";
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ROUND_SECONDS,
   TYPE_WINDOWS,
-  canPressRound,
-  createFailedRun,
-  createPressRun,
   formatClock,
-  getSecondsRemaining,
+  getSecondsRemainingUntil,
   getTypeForSecondsRemaining,
-  getTypeWindow,
   summarizeHistory,
   type NormieType,
   type RunRecord
 } from "./game";
+import {
+  fallbackArenaState,
+  fetchArenaState,
+  pressArena,
+  startArena,
+  ensureVisitorId,
+  localRunFromPress,
+  visitorTag,
+  type ArenaState
+} from "./arenaApi";
 import {
   fallbackProfiles,
   fetchTypeProfiles,
@@ -29,23 +36,22 @@ import {
 } from "./normiesApi";
 import { clearRunHistory, loadRunHistory, prependRunRecord } from "./storage";
 
-type RoundStatus = "idle" | "running" | "pressed" | "failed";
+const POLL_MS = 1000;
 
 export function App() {
+  const visitorId = useMemo(() => ensureVisitorId(), []);
   const [profiles, setProfiles] = useState<TypeProfile[]>(fallbackProfiles);
   const [profileSource, setProfileSource] = useState<"live" | "fallback">(
     "fallback"
   );
-  const [status, setStatus] = useState<RoundStatus>("idle");
-  const [startedAtMs, setStartedAtMs] = useState<number | null>(null);
-  const [secondsRemaining, setSecondsRemaining] = useState(ROUND_SECONDS);
-  const [result, setResult] = useState<RunRecord | null>(null);
+  const [arena, setArena] = useState<ArenaState>(() =>
+    fallbackArenaState(visitorId)
+  );
+  const [nowMs, setNowMs] = useState(Date.now());
+  const [apiMessage, setApiMessage] = useState("Connecting");
+  const [isBusy, setIsBusy] = useState(false);
   const [history, setHistory] = useState<RunRecord[]>(() => loadRunHistory());
-  const historyRef = useRef(history);
-
-  useEffect(() => {
-    historyRef.current = history;
-  }, [history]);
+  const recordedRunIds = useRef(new Set(history.map((run) => run.id)));
 
   useEffect(() => {
     let cancelled = false;
@@ -74,199 +80,253 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    if (status !== "running" || startedAtMs === null) {
-      return;
-    }
+    let cancelled = false;
 
-    const tick = () => {
-      const nextRemaining = getSecondsRemaining(startedAtMs, Date.now());
-      setSecondsRemaining(nextRemaining);
-
-      if (nextRemaining === 0) {
-        const failedRun = createFailedRun();
-        const nextHistory = prependRunRecord(failedRun, historyRef.current);
-        setHistory(nextHistory);
-        setResult(failedRun);
-        setStatus("failed");
+    const syncState = async () => {
+      try {
+        const state = await fetchArenaState(visitorId);
+        if (!cancelled) {
+          setArena(state);
+          setApiMessage("Multiplayer live");
+          recordVisitorRun(state);
+        }
+      } catch {
+        if (!cancelled) {
+          setApiMessage("Shared timer offline");
+        }
       }
     };
 
-    tick();
-    const intervalId = window.setInterval(tick, 250);
+    void syncState();
+    const pollId = window.setInterval(syncState, POLL_MS);
+    return () => {
+      cancelled = true;
+      window.clearInterval(pollId);
+    };
+  }, [visitorId]);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => setNowMs(Date.now()), 250);
     return () => window.clearInterval(intervalId);
-  }, [startedAtMs, status]);
+  }, []);
 
-  const activeType = getTypeForSecondsRemaining(secondsRemaining);
-  const visibleType = result?.awardedType ?? activeType ?? "Human";
-  const visibleWindow = getTypeWindow(visibleType as NormieType);
+  const adjustedNow = nowMs + (arena.serverNow - Date.now());
+  const displayedRemaining =
+    arena.status === "active" && arena.expiresAt
+      ? getSecondsRemainingUntil(arena.expiresAt, adjustedNow)
+      : ROUND_SECONDS;
+  const activeType =
+    arena.status === "active"
+      ? getTypeForSecondsRemaining(displayedRemaining)
+      : null;
   const summary = useMemo(() => summarizeHistory(history), [history]);
-  const progress = ((ROUND_SECONDS - secondsRemaining) / ROUND_SECONDS) * 100;
+  const progress =
+    arena.status === "active"
+      ? ((ROUND_SECONDS - displayedRemaining) / ROUND_SECONDS) * 100
+      : 0;
+  const ownType = arena.visitorRun?.awardedType ?? null;
+  const actionLabel = buttonLabel(arena);
+  const ActionIcon =
+    arena.status === "active"
+      ? arena.visitorPressed
+        ? Trophy
+        : Timer
+      : arena.status === "expired"
+        ? RotateCcw
+        : Play;
 
-  const startRound = () => {
-    const now = Date.now();
-    setStartedAtMs(now);
-    setSecondsRemaining(ROUND_SECONDS);
-    setResult(null);
-    setStatus("running");
-  };
-
-  const pressButton = () => {
-    if (!canPressRound(status, secondsRemaining) || startedAtMs === null) {
+  function recordVisitorRun(state: ArenaState) {
+    if (!state.visitorRun || recordedRunIds.current.has(state.visitorRun.id)) {
       return;
     }
 
-    const remaining = getSecondsRemaining(startedAtMs, Date.now());
-    if (!canPressRound(status, remaining)) {
+    recordedRunIds.current.add(state.visitorRun.id);
+    setHistory((current) => prependRunRecord(state.visitorRun!, current));
+  }
+
+  const handleAction = async () => {
+    if (isBusy || (arena.status === "active" && arena.visitorPressed)) {
       return;
     }
 
-    const run = createPressRun(remaining);
-    const nextHistory = prependRunRecord(run, history);
-    setSecondsRemaining(remaining);
-    setResult(run);
-    setHistory(nextHistory);
-    setStatus(run.status === "success" ? "pressed" : "failed");
+    setIsBusy(true);
+    try {
+      const state =
+        arena.status === "active"
+          ? await pressArena(visitorId)
+          : await startArena(visitorId);
+      setArena(state);
+      setApiMessage("Multiplayer live");
+
+      if (arena.status === "active" && state.lastPress) {
+        const run = localRunFromPress(state.lastPress, state.roundId);
+        if (!recordedRunIds.current.has(run.id)) {
+          recordedRunIds.current.add(run.id);
+          setHistory((current) => prependRunRecord(run, current));
+        }
+      }
+      recordVisitorRun(state);
+    } catch {
+      setApiMessage("Shared timer offline");
+    } finally {
+      setIsBusy(false);
+    }
   };
 
   const resetHistory = () => {
     clearRunHistory();
+    recordedRunIds.current.clear();
     setHistory([]);
   };
 
-  const buttonAction = () => {
-    if (status === "running") {
-      pressButton();
-      return;
-    }
-
-    startRound();
-  };
-
-  const actionLabel =
-    status === "idle" ? "Start" : status === "running" ? "Press" : "New run";
-  const ActionIcon =
-    status === "idle" ? Play : status === "running" ? Timer : RotateCcw;
-
   return (
-    <div
-      className="app"
-      style={
-        {
-          "--active-color": visibleWindow.color,
-          "--active-accent": visibleWindow.accent,
-          "--active-tone": visibleWindow.tone
-        } as CSSProperties
-      }
-    >
+    <div className="app">
       <header className="topbar">
         <div className="brand-lockup">
           <div className="brand-mark">N</div>
           <div>
             <h1>Normies Type Button</h1>
-            <p>5:00 solo round</p>
+            <p>Shared 5:00 experiment</p>
           </div>
         </div>
-        <div className="source-pill">{profileSource} counts</div>
+        <div className="status-strip">
+          <span>{profileSource} counts</span>
+          <span>{apiMessage}</span>
+          <span>#{visitorTag(visitorId)}</span>
+        </div>
       </header>
 
       <main className="layout">
         <section className="arena" aria-labelledby="arena-title">
           <div className="arena-copy">
             <span className="eyebrow" id="arena-title">
-              Current Type
+              Current window
             </span>
             <div className="type-readout">
-              {status === "failed" ? "No Type" : visibleType}
+              {arena.status === "active" ? activeType ?? "None" : "Ready"}
             </div>
           </div>
 
-          <div className="clock-shell" aria-live="polite">
-            <div className="progress-track">
-              <div
-                className="progress-fill"
-                style={{ width: `${progress}%` }}
-              />
+          <div className="button-console">
+            <div className="stack-wrap" aria-label="Type stack">
+              {TYPE_WINDOWS.map((window) => {
+                const profile = profiles.find(
+                  (entry) => entry.type === window.type
+                );
+                const isActive = activeType === window.type;
+                return (
+                  <div
+                    className={`stack-row ${isActive ? "is-active" : ""}`}
+                    key={window.type}
+                  >
+                    {isActive && (
+                      <span className="stack-arrow" aria-hidden="true">
+                        {"->"}
+                      </span>
+                    )}
+                    <img
+                      src={profile?.imageUrl}
+                      alt={`Normie ${profile?.representativeId ?? ""}`}
+                      width="48"
+                      height="48"
+                    />
+                    <strong>{window.type}</strong>
+                    <span>
+                      {formatClock(window.maxRemaining)}-
+                      {formatClock(window.minRemaining)}
+                    </span>
+                    <em>{arena.pressCounts[window.type]}</em>
+                  </div>
+                );
+              })}
             </div>
-            <div className="clock">{formatClock(secondsRemaining)}</div>
-            <button
-              className="button-core"
-              type="button"
-              onClick={buttonAction}
-              aria-label={actionLabel}
-            >
-              <ActionIcon aria-hidden="true" size={28} strokeWidth={2.2} />
-              <span>{actionLabel}</span>
-            </button>
+
+            <div className="clock-shell" aria-live="polite">
+              <div className="progress-track">
+                <div
+                  className="progress-fill"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <div className="clock">{formatClock(displayedRemaining)}</div>
+              <button
+                className="button-core"
+                type="button"
+                onClick={handleAction}
+                aria-label={actionLabel}
+                disabled={
+                  isBusy || (arena.status === "active" && arena.visitorPressed)
+                }
+              >
+                <ActionIcon aria-hidden="true" size={28} strokeWidth={2.2} />
+                <span>{isBusy ? "Sync" : actionLabel}</span>
+              </button>
+            </div>
           </div>
 
           <div className="result-line">
-            {status === "idle" && <span>Ready</span>}
-            {status === "running" && activeType && (
+            {arena.status === "idle" && <span>Start the shared timer</span>}
+            {arena.status === "expired" && <span>The shared timer hit zero</span>}
+            {arena.status === "active" && !arena.visitorPressed && activeType && (
               <span>{activeType} window active</span>
             )}
-            {status === "pressed" && result?.awardedType && (
-              <span>
-                Awarded {result.awardedType} at{" "}
-                {formatClock(result.pressedAtSecondsRemaining)}
-              </span>
+            {arena.status === "active" && arena.visitorPressed && ownType && (
+              <span>You pressed as {ownType}</span>
             )}
-            {status === "failed" && <span>Zero reached</span>}
           </div>
         </section>
 
-        <section className="type-grid" aria-label="Type windows">
-          {TYPE_WINDOWS.map((window) => {
-            const profile = profiles.find((entry) => entry.type === window.type);
-            const isActive = activeType === window.type && status === "running";
-            const standing = summary.standings.find(
-              (entry) => entry.type === window.type
-            );
+        <section className="scoreboard" aria-label="Shared standings">
+          <div className="score-heading">
+            <div>
+              <span className="eyebrow">Shared</span>
+              <h2>Round {arena.roundId}</h2>
+            </div>
+            <Users aria-hidden="true" size={24} />
+          </div>
 
-            return (
-              <article
-                className={`type-card ${isActive ? "is-active" : ""}`}
-                key={window.type}
-                style={
-                  {
-                    "--type-color": window.color,
-                    "--type-accent": window.accent,
-                    "--type-tone": window.tone
-                  } as CSSProperties
-                }
-              >
-                <img
-                  src={profile?.imageUrl}
-                  alt={`Normie ${profile?.representativeId ?? ""}`}
-                  width="80"
-                  height="80"
-                  loading="lazy"
-                />
-                <div className="type-card-body">
-                  <div className="type-card-main">
-                    <strong>{window.type}</strong>
-                    <span>{profile?.count.toLocaleString() ?? "0"}</span>
-                  </div>
-                  <div className="window-range">
-                    {formatClock(window.maxRemaining)}-
-                    {formatClock(window.minRemaining)}
-                  </div>
-                  <div className="card-stat">
-                    {standing?.bestSecondsWaited !== null &&
-                    standing?.bestSecondsWaited !== undefined
-                      ? formatClock(standing.bestSecondsWaited)
-                      : "--"}
-                  </div>
-                </div>
-              </article>
-            );
-          })}
+          <div className="metric-row">
+            <Metric
+              icon={<Activity aria-hidden="true" size={18} />}
+              label="Presses"
+              value={arena.totalPresses.toString()}
+            />
+            <Metric
+              icon={<Timer aria-hidden="true" size={18} />}
+              label="Last"
+              value={
+                arena.lastPress
+                  ? `${arena.lastPress.type} ${formatClock(
+                      arena.lastPress.secondsWaited
+                    )}`
+                  : "--"
+              }
+            />
+            <Metric
+              icon={<Trophy aria-hidden="true" size={18} />}
+              label="You"
+              value={ownType ?? "--"}
+            />
+          </div>
+
+          <div className="recent-list">
+            {arena.lastPress && (
+              <div className="recent-run">
+                <span className="run-dot" />
+                <strong>{arena.lastPress.type}</strong>
+                <span>{formatClock(arena.lastPress.secondsWaited)}</span>
+                <span>#{arena.lastPress.visitorTag}</span>
+              </div>
+            )}
+            {!arena.lastPress && <div className="empty-state">No presses</div>}
+          </div>
         </section>
 
-        <section className="scoreboard" aria-label="Local standings">
+        <section className="scoreboard local-scoreboard" aria-label="Local history">
           <div className="score-heading">
             <div>
               <span className="eyebrow">Local</span>
-              <h2>Standings</h2>
+              <h2>Your History</h2>
             </div>
             <button
               className="icon-button"
@@ -292,22 +352,17 @@ export function App() {
               }
             />
             <Metric
-              icon={<Activity aria-hidden="true" size={18} />}
+              icon={<History aria-hidden="true" size={18} />}
               label="Runs"
               value={summary.totalRuns.toString()}
-            />
-            <Metric
-              icon={<History aria-hidden="true" size={18} />}
-              label="Failed"
-              value={summary.failedRuns.toString()}
             />
           </div>
 
           <div className="recent-list">
-            {history.slice(0, 6).map((run) => (
+            {history.slice(0, 5).map((run) => (
               <div className="recent-run" key={run.id}>
-                <span className={`run-dot ${run.awardedType ?? "failed"}`} />
-                <strong>{run.awardedType ?? "No Type"}</strong>
+                <span className="run-dot" />
+                <strong>{run.awardedType ?? "None"}</strong>
                 <span>{formatClock(run.secondsWaited)}</span>
                 <span>{formatDate(run.timestamp)}</span>
               </div>
@@ -318,6 +373,13 @@ export function App() {
       </main>
     </div>
   );
+}
+
+function buttonLabel(arena: ArenaState): string {
+  if (arena.status === "active" && arena.visitorPressed) return "Pressed";
+  if (arena.status === "active") return "Press";
+  if (arena.status === "expired") return "Revive";
+  return "Start";
 }
 
 function Metric({

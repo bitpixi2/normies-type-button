@@ -9,7 +9,9 @@
     "preview": "vite preview --host 127.0.0.1",
     "test": "vitest run",
     "typecheck": "tsc -b",
-    "deploy": "npm run build && wrangler pages deploy dist --project-name normies-type-button"
+    "deploy:api": "wrangler deploy -c worker/wrangler.jsonc",
+    "deploy:pages": "npm run build && wrangler pages deploy dist --project-name normies-type-button --commit-dirty=true",
+    "deploy": "npm run deploy:api && npm run deploy:pages"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^5.0.0",

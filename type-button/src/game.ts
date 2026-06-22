@@ -28,45 +28,45 @@ export const TYPE_WINDOWS: TypeWindow[] = [
     type: "Human",
     minRemaining: 241,
     maxRemaining: 300,
-    color: "#3667c8",
-    accent: "#d8e5ff",
-    tone: "#f4f7ff",
+    color: "#111111",
+    accent: "#e3e5e4",
+    tone: "#f7f7f7",
     representativeId: 0
   },
   {
     type: "Cat",
     minRemaining: 181,
     maxRemaining: 240,
-    color: "#a95d10",
-    accent: "#ffe3bc",
-    tone: "#fff8ed",
+    color: "#111111",
+    accent: "#d8d8d8",
+    tone: "#f2f2f2",
     representativeId: 8831
   },
   {
     type: "Alien",
     minRemaining: 121,
     maxRemaining: 180,
-    color: "#1f7b56",
-    accent: "#ccefdc",
-    tone: "#f0fbf5",
+    color: "#111111",
+    accent: "#cfcfcf",
+    tone: "#eeeeee",
     representativeId: 3295
   },
   {
     type: "Agent",
     minRemaining: 61,
     maxRemaining: 120,
-    color: "#6b52b8",
-    accent: "#e5ddff",
-    tone: "#f7f4ff",
+    color: "#111111",
+    accent: "#c2c2c2",
+    tone: "#e9e9e9",
     representativeId: 7626
   },
   {
     type: "Zombie",
     minRemaining: 1,
     maxRemaining: 60,
-    color: "#b3263a",
-    accent: "#ffd6dc",
-    tone: "#fff2f4",
+    color: "#111111",
+    accent: "#b5b5b5",
+    tone: "#e4e4e4",
     representativeId: 9572
   }
 ];
@@ -106,6 +106,10 @@ export function getSecondsRemaining(
 
   const remainingMs = startedAtMs + durationSeconds * 1000 - nowMs;
   return Math.max(0, Math.ceil(remainingMs / 1000));
+}
+
+export function getSecondsRemainingUntil(expiresAtMs: number, nowMs: number): number {
+  return Math.max(0, Math.ceil((expiresAtMs - nowMs) / 1000));
 }
 
 export function formatClock(seconds: number): string {

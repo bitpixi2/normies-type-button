@@ -1,0 +1,21 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "normies-type-button-api",
+  "main": "src/index.js",
+  "compatibility_date": "2026-06-22",
+  "workers_dev": true,
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "ARENA",
+        "class_name": "ArenaObject"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["ArenaObject"]
+    }
+  ]
+}
