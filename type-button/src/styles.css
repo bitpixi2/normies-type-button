@@ -331,33 +331,31 @@ h2 {
 
 .generated-button-sprite {
   position: absolute;
-  inset: -8px;
-  width: 100%;
-  height: 100%;
+  inset: -12px;
   background-image: url("/assets/button-stack-generated.png");
   background-position: center;
   background-repeat: no-repeat;
-  background-size: contain;
-  clip-path: ellipse(47% 44% at 50% 52%);
+  background-size: 100% 100%;
   filter: grayscale(1) contrast(1.14);
   image-rendering: pixelated;
-  mix-blend-mode: multiply;
-  transition: transform 120ms steps(2, end);
+  transition: background-size 120ms steps(2, end);
 }
 
 .button-core:active:not(:disabled) .generated-button-sprite,
 .button-core.is-pressed .generated-button-sprite {
   background-image: url("/assets/button-stack-pressed-generated.png");
-  clip-path: ellipse(47% 40% at 50% 52%);
-  transform: translateY(10px) scale(0.94);
+  background-size: 100% 100%;
 }
 
 .button-action-label {
-  position: relative;
+  position: absolute;
+  top: 39%;
+  left: 50%;
   z-index: 1;
   display: grid;
   max-width: 120px;
-  transform: translateY(-42px);
+  min-height: 1em;
+  transform: translate(-50%, -50%);
   place-items: center;
   color: #ffffff;
   font-size: 1.2rem;
@@ -365,13 +363,6 @@ h2 {
   pointer-events: none;
   text-align: center;
   text-transform: uppercase;
-}
-
-.button-action-label svg {
-  width: 28px;
-  height: 28px;
-  margin-bottom: 2px;
-  fill: currentColor;
 }
 
 .button-core:focus-visible,
@@ -484,8 +475,7 @@ h2 {
 }
 
 .number-panel-top > span,
-.number-help,
-.number-status {
+.number-help {
   color: var(--muted);
   font-size: 0.8rem;
 }
@@ -528,11 +518,6 @@ h2 {
 
 .number-entry button:disabled {
   opacity: 0.62;
-}
-
-.number-status {
-  min-height: 1em;
-  color: var(--ink);
 }
 
 .history-heading {
@@ -724,13 +709,9 @@ h2 {
   }
 
   .button-action-label {
-    transform: translateY(-34px);
+    top: 39%;
+    transform: translate(-50%, -50%);
     font-size: 1rem;
-  }
-
-  .button-action-label svg {
-    width: 26px;
-    height: 26px;
   }
 
   .number-panel-top strong {

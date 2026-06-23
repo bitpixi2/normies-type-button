@@ -46,7 +46,6 @@ export function App() {
   const [apiMessage, setApiMessage] = useState("Connecting");
   const [isBusy, setIsBusy] = useState(false);
   const [numberInput, setNumberInput] = useState("");
-  const [numberMessage, setNumberMessage] = useState("");
   const [isNumberBusy, setIsNumberBusy] = useState(false);
   const [flashedPressKey, setFlashedPressKey] = useState<string | null>(null);
   const flashTimeoutRef = useRef<number | null>(null);
@@ -134,14 +133,8 @@ export function App() {
     [arena.lastPress, arena.recentPresses]
   );
   const actionLabel = buttonLabel(arena);
-  const actionIcon =
-    arena.status === "active"
-      ? arena.visitorPressed
-        ? "trophy"
-        : "timer"
-      : arena.status === "expired"
-        ? "revive"
-        : "play";
+  const visibleButtonLabel =
+    arena.status === "active" && arena.visitorPressed ? "Wait" : "";
 
   useEffect(() => {
     const renderGameToText = () =>
@@ -219,19 +212,16 @@ export function App() {
 
     const parsedNumber = Number.parseInt(numberInput, 10);
     if (!Number.isInteger(parsedNumber) || parsedNumber < 0 || parsedNumber > 9999) {
-      setNumberMessage("Use a number from 0 to 9999");
       return;
     }
 
     setIsNumberBusy(true);
-    setNumberMessage("Queueing");
     try {
       const state = await submitRoundNumber(visitorId, parsedNumber);
       setArena(state);
       setNumberInput("");
-      setNumberMessage(`#${formatSubmittedNumber(parsedNumber)} queued for round ${state.roundId + 1}`);
     } catch {
-      setNumberMessage("Queue failed");
+      setNumberInput("");
     } finally {
       setIsNumberBusy(false);
     }
@@ -327,8 +317,7 @@ export function App() {
               >
                 <span className="generated-button-sprite" aria-hidden="true" />
                 <span className="button-action-label">
-                  <PixelIcon name={actionIcon} />
-                  <span>{isBusy ? "Sync" : actionLabel}</span>
+                  {visibleButtonLabel}
                 </span>
               </button>
             </div>
@@ -421,12 +410,7 @@ export function App() {
             </form>
 
             <div className="number-help">
-              It will show when round {arena.roundId + 1} starts, not this round.
-            </div>
-            <div className="number-status" aria-live="polite">
-              {arena.pendingNumber
-                ? `Next: #${formatSubmittedNumber(arena.pendingNumber.value)} by #${arena.pendingNumber.visitorTag}`
-                : numberMessage || "No # queued"}
+              They will show when the next round starts!
             </div>
           </section>
 

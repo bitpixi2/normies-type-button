@@ -12,6 +12,7 @@ Original prompt: Build and iterate the Normies Type Button web game, now global-
 - Lightened the pixel font weight to improve `5` and `C` readability, capped the visible history feed at the latest 5 rows, and added a right-panel flash while syncing plus a row flash when a new history entry lands.
 - Added a shared next-round number queue in the right panel. Submitted numbers show on the following round, with current and pending number state stored in the Worker.
 - Swapped the main button to generated raster button crops and added a custom pixel cursor asset.
+- Cleaned up the generated button presentation: no visible Press/icon label, Wait only on locked rounds, full transparent button crops without the ellipse mask, and shorter next-round number helper copy.
 
 ## TODO
 - None currently known.
