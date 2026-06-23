@@ -25,6 +25,8 @@ Original prompt: Build and iterate the Normies Type Button web game, now global-
 - Renamed the README title to "Normies Button" and changed the mobile arena so the centered logo, Type readout, clock, and button appear before the Type stack.
 - Added mobile haptic/tap feedback for valid button presses, denser mobile Type rows, and a compact latest-3 mobile history panel.
 - Replaced the HUD corner filigrees with the newer corner-only sheet and vertically centered the desktop module layout within the viewport.
+- Reduced all four background corner filigrees to roughly half size with matched top and bottom sizing.
+- Added a five-minute inactivity pause that darkens the screen, stops arena polling, and resumes with an immediate state sync from a centered Resume module.
 
 ## TODO
 - None currently known.

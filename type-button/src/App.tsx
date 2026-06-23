@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ROUND_SECONDS,
   TYPE_WINDOWS,
@@ -32,6 +32,13 @@ const HISTORY_VISIBLE_LIMIT = 5;
 const MOBILE_HISTORY_VISIBLE_LIMIT = 3;
 const HISTORY_FLASH_MS = 900;
 const BUTTON_TAP_FEEDBACK_MS = 180;
+const configuredIdlePauseMs = Number.parseInt(
+  import.meta.env.VITE_IDLE_PAUSE_MS || "",
+  10
+);
+const IDLE_PAUSE_MS = Number.isFinite(configuredIdlePauseMs)
+  ? configuredIdlePauseMs
+  : 5 * 60 * 1000;
 
 export function App() {
   const visitorId = useMemo(() => ensureVisitorId(), []);
@@ -45,8 +52,28 @@ export function App() {
   const [isNumberBusy, setIsNumberBusy] = useState(false);
   const [flashedPressKey, setFlashedPressKey] = useState<string | null>(null);
   const [isButtonTapping, setIsButtonTapping] = useState(false);
+  const [isIdlePaused, setIsIdlePaused] = useState(false);
   const flashTimeoutRef = useRef<number | null>(null);
   const tapTimeoutRef = useRef<number | null>(null);
+  const idleTimeoutRef = useRef<number | null>(null);
+
+  const syncArenaState = useCallback(async () => {
+    try {
+      const state = await fetchArenaState(visitorId);
+      setArena(state);
+    } catch {}
+  }, [visitorId]);
+
+  const resetIdleTimer = useCallback(() => {
+    if (idleTimeoutRef.current !== null) {
+      window.clearTimeout(idleTimeoutRef.current);
+    }
+
+    idleTimeoutRef.current = window.setTimeout(() => {
+      setIsIdlePaused(true);
+      idleTimeoutRef.current = null;
+    }, IDLE_PAUSE_MS);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -69,24 +96,35 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
+    if (isIdlePaused) {
+      return undefined;
+    }
 
-    const syncState = async () => {
-      try {
-        const state = await fetchArenaState(visitorId);
-        if (!cancelled) {
-          setArena(state);
-        }
-      } catch {}
-    };
-
-    void syncState();
-    const pollId = window.setInterval(syncState, POLL_MS);
+    void syncArenaState();
+    const pollId = window.setInterval(syncArenaState, POLL_MS);
     return () => {
-      cancelled = true;
       window.clearInterval(pollId);
     };
-  }, [visitorId]);
+  }, [isIdlePaused, syncArenaState]);
+
+  useEffect(() => {
+    if (isIdlePaused) {
+      return undefined;
+    }
+
+    const handleActivity = () => resetIdleTimer();
+    resetIdleTimer();
+    window.addEventListener("pointerdown", handleActivity);
+    window.addEventListener("keydown", handleActivity);
+    return () => {
+      window.removeEventListener("pointerdown", handleActivity);
+      window.removeEventListener("keydown", handleActivity);
+      if (idleTimeoutRef.current !== null) {
+        window.clearTimeout(idleTimeoutRef.current);
+        idleTimeoutRef.current = null;
+      }
+    };
+  }, [isIdlePaused, resetIdleTimer]);
 
   useEffect(() => {
     const intervalId = window.setInterval(() => setNowMs(Date.now()), 250);
@@ -158,6 +196,9 @@ export function App() {
       if (tapTimeoutRef.current !== null) {
         window.clearTimeout(tapTimeoutRef.current);
       }
+      if (idleTimeoutRef.current !== null) {
+        window.clearTimeout(idleTimeoutRef.current);
+      }
     };
   }, []);
 
@@ -196,6 +237,12 @@ export function App() {
     } finally {
       setIsBusy(false);
     }
+  };
+
+  const handleResume = () => {
+    setIsIdlePaused(false);
+    resetIdleTimer();
+    void syncArenaState();
   };
 
   const triggerButtonFeedback = () => {
@@ -425,6 +472,19 @@ export function App() {
         </section>
 
       </main>
+      {isIdlePaused && (
+        <div className="idle-overlay" role="dialog" aria-modal="true">
+          <div className="idle-module">
+            <button
+              className="idle-resume-button"
+              type="button"
+              onClick={handleResume}
+            >
+              Resume
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

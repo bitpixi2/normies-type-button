@@ -71,10 +71,10 @@ input {
     right 14px bottom 14px;
   background-repeat: no-repeat;
   background-size:
-    clamp(160px, 22vw, 310px) auto,
-    clamp(160px, 22vw, 310px) auto,
-    clamp(160px, 22vw, 310px) auto,
-    clamp(160px, 22vw, 310px) auto;
+    clamp(80px, 11vw, 155px) auto,
+    clamp(80px, 11vw, 155px) auto,
+    clamp(80px, 11vw, 155px) auto,
+    clamp(80px, 11vw, 155px) auto;
   content: "";
   image-rendering: pixelated;
   opacity: 0.2;
@@ -130,6 +130,42 @@ h2 {
   gap: 16px;
   max-width: 1180px;
   margin: 0 auto;
+}
+
+.idle-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(17, 17, 17, 0.72);
+}
+
+.idle-module {
+  display: grid;
+  min-width: min(320px, 86vw);
+  min-height: 160px;
+  place-items: center;
+  border: 2px solid var(--ink);
+  background: var(--paper);
+  box-shadow: 8px 8px 0 #111111;
+}
+
+.idle-resume-button {
+  min-width: 180px;
+  min-height: 58px;
+  border: 2px solid var(--ink);
+  background: #ffffff;
+  color: var(--ink);
+  font-size: 1.5rem;
+  text-transform: uppercase;
+}
+
+.idle-resume-button:hover,
+.idle-resume-button:focus-visible {
+  background: #111111;
+  color: #ffffff;
 }
 
 .arena,
@@ -637,10 +673,10 @@ h2 {
       left -26px bottom 4px,
       right -26px bottom 4px;
     background-size:
-      150px auto,
-      150px auto,
-      150px auto,
-      150px auto;
+      75px auto,
+      75px auto,
+      75px auto,
+      75px auto;
     opacity: 0.15;
   }
 
