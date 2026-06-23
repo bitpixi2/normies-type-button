@@ -16,7 +16,8 @@ Original prompt: Build and iterate the Normies Type Button web game, now global-
 - Trimmed the right panel to save vertical room: removed the Last/You metric cards and removed the current-round number display above the Send In # form.
 - Removed the upper-right header status pills and lowered the locked Wait label slightly within the pressed button's dark circle.
 - Recentered the pressed button raster by measuring dark-pixel bounds; default and pressed sprites now share the same dark-pixel horizontal center.
-- Simplified the header to "The Normies Button" and removed the extra brand icon/subtitle. Removed Type glyph overlays from Normies API image tiles.
+- Simplified the header to "Normies Button" and removed the extra brand icon/subtitle. Removed Type glyph overlays from Normies API image tiles.
+- Removed the visible "Current window" and "Shared" micro-labels to reduce text clutter.
 
 ## TODO
 - None currently known.

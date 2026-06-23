@@ -213,16 +213,13 @@ export function App() {
     <div className="app">
       <header className="topbar">
         <div className="brand-lockup">
-          <h1>The Normies Button</h1>
+          <h1>Normies Button</h1>
         </div>
       </header>
 
       <main className="layout">
-        <section className="arena" aria-labelledby="arena-title">
+        <section className="arena" aria-label="Current Type window">
           <div className="arena-copy">
-            <span className="eyebrow" id="arena-title">
-              Current window
-            </span>
             <div className="type-readout">
               {arena.status === "active" ? activeType ?? "None" : "Ready"}
             </div>
@@ -313,7 +310,6 @@ export function App() {
         >
           <div className="score-heading">
             <div>
-              <span className="eyebrow">Shared</span>
               <h2>Round {arena.roundId}</h2>
             </div>
             <PixelIcon className="heading-icon" name="users" />
