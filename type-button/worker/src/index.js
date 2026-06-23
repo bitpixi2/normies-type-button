@@ -4,6 +4,8 @@ const HISTORY_LIMIT = 24;
 const HISTORY_STORAGE_KEY = "pressHistory";
 const PENDING_NUMBER_STORAGE_KEY = "pendingNumber";
 const MAX_SUBMITTED_NUMBER = 9999;
+const NUMBER_LOG_LIMIT = 250;
+const NORMIES_API_BASE = "https://api.normies.art";
 const TYPES = ["Human", "Cat", "Alien", "Agent", "Zombie"];
 const INITIAL_COUNTS = {
   Human: 0,
@@ -16,7 +18,7 @@ const INITIAL_COUNTS = {
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type"
+  "Access-Control-Allow-Headers": "Content-Type, x-number-log-key"
 };
 
 export default {
@@ -32,8 +34,9 @@ export default {
 };
 
 export class ArenaObject {
-  constructor(state) {
+  constructor(state, env) {
     this.state = state;
+    this.env = env;
   }
 
   async fetch(request) {
@@ -66,9 +69,17 @@ export class ArenaObject {
         );
       }
 
+      if (url.pathname === "/number-log" && request.method === "GET") {
+        this.assertNumberLogAccess(request);
+        return json(await this.readNumberLog(url.searchParams));
+      }
+
       return json({ error: "Not found" }, 404);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
+      if (error instanceof HttpError) {
+        return json({ error: message }, error.status);
+      }
       return json({ error: message, state: await this.readState("") }, 400);
     }
   }
@@ -157,9 +168,17 @@ export class ArenaObject {
       timestamp: new Date(now).toISOString()
     };
 
+    const { round, changed } = await this.normalizeRound(now);
+    const owner = await lookupNormieOwner(value);
+    await this.logSubmittedNumber({
+      tokenId: value,
+      owner,
+      visitorTag: pendingNumber.visitorTag,
+      timestamp: pendingNumber.timestamp,
+      roundId: round.roundId
+    });
     await this.state.storage.put(PENDING_NUMBER_STORAGE_KEY, pendingNumber);
 
-    const { round, changed } = await this.normalizeRound(now);
     if (changed) {
       await this.saveRound(round);
     }
@@ -284,6 +303,83 @@ export class ArenaObject {
     await this.state.storage.put(HISTORY_STORAGE_KEY, nextHistory);
     return nextHistory;
   }
+
+  async logSubmittedNumber(entry) {
+    this.state.storage.sql.exec(
+      `CREATE TABLE IF NOT EXISTS submitted_number_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        token_id INTEGER NOT NULL,
+        owner TEXT,
+        visitor_tag TEXT NOT NULL,
+        round_id INTEGER NOT NULL,
+        submitted_at TEXT NOT NULL
+      )`
+    );
+    this.state.storage.sql.exec(
+      `INSERT INTO submitted_number_log
+        (token_id, owner, visitor_tag, round_id, submitted_at)
+        VALUES (?, ?, ?, ?, ?)`,
+      entry.tokenId,
+      entry.owner,
+      entry.visitorTag,
+      entry.roundId,
+      entry.timestamp
+    );
+  }
+
+  async readNumberLog(searchParams) {
+    const limit = parseLogLimit(searchParams.get("limit"));
+    this.state.storage.sql.exec(
+      `CREATE TABLE IF NOT EXISTS submitted_number_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        token_id INTEGER NOT NULL,
+        owner TEXT,
+        visitor_tag TEXT NOT NULL,
+        round_id INTEGER NOT NULL,
+        submitted_at TEXT NOT NULL
+      )`
+    );
+
+    const rows = [
+      ...this.state.storage.sql.exec(
+        `SELECT token_id AS tokenId,
+          owner,
+          visitor_tag AS visitorTag,
+          round_id AS roundId,
+          submitted_at AS submittedAt
+        FROM submitted_number_log
+        ORDER BY id DESC
+        LIMIT ?`,
+        limit
+      )
+    ];
+
+    return { submissions: rows };
+  }
+
+  assertNumberLogAccess(request) {
+    const expected = this.env?.NUMBER_LOG_KEY;
+    if (!expected) {
+      throw new HttpError("Number log access is not configured", 503);
+    }
+
+    const url = new URL(request.url);
+    const supplied =
+      request.headers.get("x-number-log-key") ||
+      url.searchParams.get("key") ||
+      "";
+
+    if (supplied !== expected) {
+      throw new HttpError("Forbidden", 403);
+    }
+  }
+}
+
+class HttpError extends Error {
+  constructor(message, status) {
+    super(message);
+    this.status = status;
+  }
 }
 
 function defaultRound() {
@@ -357,6 +453,23 @@ function parseSubmittedNumber(value) {
     throw new Error(`Number must be between 0 and ${MAX_SUBMITTED_NUMBER}`);
   }
   return number;
+}
+
+function parseLogLimit(value) {
+  const parsed = Number.parseInt(String(value || ""), 10);
+  if (!Number.isInteger(parsed)) return 50;
+  return Math.min(Math.max(parsed, 1), NUMBER_LOG_LIMIT);
+}
+
+async function lookupNormieOwner(tokenId) {
+  try {
+    const response = await fetch(`${NORMIES_API_BASE}/normie/${tokenId}/owner`);
+    if (!response.ok) return null;
+    const data = await response.json();
+    return typeof data.owner === "string" ? data.owner : null;
+  } catch {
+    return null;
+  }
 }
 
 function normalizeNumberRecord(value) {

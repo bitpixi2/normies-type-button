@@ -28,6 +28,7 @@ Original prompt: Build and iterate the Normies Type Button web game, now global-
 - Reduced all four background corner filigrees to roughly half size with matched top and bottom sizing.
 - Added a five-minute inactivity pause that darkens the screen, stops arena polling, and resumes with an immediate state sync from a centered Resume module.
 - Increased only the upper-left and upper-right background filigree render size so their shorter source crops visually match the lower corner sprites.
+- Added a backend-only submitted token log in the Arena Durable Object SQLite storage. Each Send In # submission now records token ID, owner from the Normies owner API at submission time, visitor tag, round, and timestamp; a private `/number-log` endpoint can read recent rows when `NUMBER_LOG_KEY` is configured.
 
 ## TODO
-- None currently known.
+- Configure the `NUMBER_LOG_KEY` Worker secret before using the private `/number-log` endpoint.
