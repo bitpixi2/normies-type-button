@@ -14,6 +14,7 @@ Original prompt: Build and iterate the Normies Type Button web game, now global-
 - Swapped the main button to generated raster button crops and added a custom pixel cursor asset.
 - Cleaned up the generated button presentation: no visible Press/icon label, Wait only on locked rounds, full transparent button crops without the ellipse mask, and shorter next-round number helper copy.
 - Trimmed the right panel to save vertical room: removed the Last/You metric cards and removed the current-round number display above the Send In # form.
+- Removed the upper-right header status pills and lowered the locked Wait label slightly within the pressed button's dark circle.
 
 ## TODO
 - None currently known.

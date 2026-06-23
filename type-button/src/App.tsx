@@ -14,7 +14,6 @@ import {
   startArena,
   ensureVisitorId,
   submitRoundNumber,
-  visitorTag,
   type ArenaPress,
   type ArenaState
 } from "./arenaApi";
@@ -36,14 +35,10 @@ const HISTORY_FLASH_MS = 900;
 export function App() {
   const visitorId = useMemo(() => ensureVisitorId(), []);
   const [profiles, setProfiles] = useState<TypeProfile[]>(fallbackProfiles);
-  const [profileSource, setProfileSource] = useState<"live" | "fallback">(
-    "fallback"
-  );
   const [arena, setArena] = useState<ArenaState>(() =>
     fallbackArenaState(visitorId)
   );
   const [nowMs, setNowMs] = useState(Date.now());
-  const [apiMessage, setApiMessage] = useState("Connecting");
   const [isBusy, setIsBusy] = useState(false);
   const [numberInput, setNumberInput] = useState("");
   const [isNumberBusy, setIsNumberBusy] = useState(false);
@@ -57,17 +52,11 @@ export function App() {
       .then((nextProfiles) => {
         if (!cancelled) {
           setProfiles(nextProfiles);
-          setProfileSource(
-            nextProfiles.every((profile) => profile.source === "live")
-              ? "live"
-              : "fallback"
-          );
         }
       })
       .catch(() => {
         if (!cancelled) {
           setProfiles(fallbackProfiles());
-          setProfileSource("fallback");
         }
       });
 
@@ -84,13 +73,8 @@ export function App() {
         const state = await fetchArenaState(visitorId);
         if (!cancelled) {
           setArena(state);
-          setApiMessage("Multiplayer live");
         }
-      } catch {
-        if (!cancelled) {
-          setApiMessage("Shared timer offline");
-        }
-      }
+      } catch {}
     };
 
     void syncState();
@@ -193,14 +177,13 @@ export function App() {
           ? await pressArena(visitorId)
           : await startArena(visitorId);
       setArena(state);
-      setApiMessage("Multiplayer live");
 
       const latestPress = state.recentPresses?.[0] ?? state.lastPress;
       if (latestPress) {
         flashHistoryPress(latestPress);
       }
     } catch {
-      setApiMessage("Shared timer offline");
+      // Keep the existing round visible if the shared API hiccups.
     } finally {
       setIsBusy(false);
     }
@@ -238,11 +221,6 @@ export function App() {
             <h1>Normies Type Button</h1>
             <p>Shared 1:00 experiment</p>
           </div>
-        </div>
-        <div className="status-strip">
-          <span>{profileSource} counts</span>
-          <span>{apiMessage}</span>
-          <span>#{visitorTag(visitorId)}</span>
         </div>
       </header>
 

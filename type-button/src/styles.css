@@ -99,7 +99,6 @@ h2 {
 }
 
 .brand-lockup p,
-.status-strip,
 .eyebrow,
 .stack-row span,
 .metric span,
@@ -107,23 +106,6 @@ h2 {
 .history-run span,
 .empty-state {
   color: var(--muted);
-}
-
-.status-strip {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.status-strip span {
-  padding: 8px 10px;
-  border: 1px solid var(--ink);
-  background: var(--panel);
-  color: var(--ink);
-  font-size: 0.88rem;
-  font-weight: 500;
-  text-transform: uppercase;
 }
 
 .layout {
@@ -349,7 +331,7 @@ h2 {
 
 .button-action-label {
   position: absolute;
-  top: 39%;
+  top: 42%;
   left: 50%;
   z-index: 1;
   display: grid;
@@ -631,10 +613,6 @@ h2 {
     flex-direction: column;
   }
 
-  .status-strip {
-    justify-content: flex-start;
-  }
-
   .arena {
     min-height: 560px;
     padding: 18px;
@@ -689,7 +667,7 @@ h2 {
   }
 
   .button-action-label {
-    top: 39%;
+    top: 42%;
     transform: translate(-50%, -50%);
     font-size: 1rem;
   }
