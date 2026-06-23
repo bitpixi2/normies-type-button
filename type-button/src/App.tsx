@@ -213,7 +213,15 @@ export function App() {
     <div className="app">
       <header className="topbar">
         <div className="brand-lockup">
-          <h1>Normies Button</h1>
+          <h1 className="brand-logo-title">
+            <img
+              alt="Dead and Breakfast"
+              className="brand-logo"
+              height="252"
+              src="/assets/dead-breakfast-logo.png"
+              width="760"
+            />
+          </h1>
         </div>
       </header>
 

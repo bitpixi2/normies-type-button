@@ -18,6 +18,7 @@ Original prompt: Build and iterate the Normies Type Button web game, now global-
 - Recentered the pressed button raster by measuring dark-pixel bounds; default and pressed sprites now share the same dark-pixel horizontal center.
 - Simplified the header to "Normies Button" and removed the extra brand icon/subtitle. Removed Type glyph overlays from Normies API image tiles.
 - Removed the visible "Current window" and "Shared" micro-labels to reduce text clutter.
+- Generated and integrated a monochrome image-gen logo for "Dead and Breakfast" plus a transparent HUD filigree decoration layer behind the UI. The same decoration asset is responsively scaled for desktop, tablet, and mobile.
 
 ## TODO
 - None currently known.

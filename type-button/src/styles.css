@@ -36,6 +36,7 @@ input {
 }
 
 .app {
+  position: relative;
   min-height: 100vh;
   padding: 24px;
   background:
@@ -45,13 +46,33 @@ input {
   background-size: 16px 16px;
 }
 
+.app::before {
+  position: fixed;
+  inset: 4px auto auto 50%;
+  z-index: 0;
+  width: min(1400px, 108vw);
+  height: min(900px, 96vh);
+  pointer-events: none;
+  background-image: url("/assets/hud-filigree.png");
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: contain;
+  content: "";
+  image-rendering: pixelated;
+  opacity: 0.24;
+  transform: translateX(-50%);
+}
+
 .topbar {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  height: 104px;
   max-width: 1180px;
-  margin: 0 auto 18px;
+  margin: 0 auto 8px;
 }
 
 .brand-lockup {
@@ -75,6 +96,17 @@ h1 {
   line-height: 1.1;
 }
 
+.brand-logo-title {
+  line-height: 0;
+}
+
+.brand-logo {
+  display: block;
+  width: clamp(260px, 30vw, 360px);
+  height: auto;
+  image-rendering: pixelated;
+}
+
 h2 {
   font-size: 1.25rem;
   font-weight: 500;
@@ -91,6 +123,8 @@ h2 {
 }
 
 .layout {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
   gap: 16px;
@@ -573,9 +607,23 @@ h2 {
     padding: 14px;
   }
 
+  .app::before {
+    inset: 4px auto auto 50%;
+    width: 780px;
+    height: 580px;
+    background-size: contain;
+    opacity: 0.16;
+  }
+
   .topbar {
     align-items: flex-start;
     flex-direction: column;
+    height: 96px;
+    margin-bottom: 8px;
+  }
+
+  .brand-logo {
+    width: min(300px, 86vw);
   }
 
   .arena {
