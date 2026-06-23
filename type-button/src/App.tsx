@@ -101,6 +101,8 @@ export function App() {
     arena.status === "active"
       ? getTypeForSecondsRemaining(displayedRemaining)
       : null;
+  const displayedType = arena.status === "active" ? activeType ?? "None" : "Ready";
+  const activeTypeGlyph = activeType ? typeGlyphSrc(activeType) : null;
   const progress =
     arena.status === "active"
       ? ((ROUND_SECONDS - displayedRemaining) / ROUND_SECONDS) * 100
@@ -224,7 +226,17 @@ export function App() {
               />
             </h1>
             <div className="type-readout">
-              {arena.status === "active" ? activeType ?? "None" : "Ready"}
+              {activeTypeGlyph && (
+                <img
+                  alt=""
+                  aria-hidden="true"
+                  className="active-type-glyph"
+                  height="96"
+                  src={activeTypeGlyph}
+                  width="96"
+                />
+              )}
+              <span>{displayedType}</span>
             </div>
           </div>
 
@@ -397,6 +409,10 @@ function buttonLabel(arena: ArenaState): string {
 
 function historyPressKey(press: ArenaPress): string {
   return `${press.roundId}-${press.timestamp}-${press.visitorTag}`;
+}
+
+function typeGlyphSrc(type: string): string {
+  return `/assets/type-${type.toLowerCase()}-glyph.png`;
 }
 
 function formatSubmittedNumber(value: number): string {
