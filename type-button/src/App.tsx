@@ -308,16 +308,6 @@ export function App() {
                 />
               </div>
               <div className="clock">{formatClock(displayedRemaining)}</div>
-              {activeTypeGlyph && (
-                <img
-                  alt=""
-                  aria-hidden="true"
-                  className="button-type-echo"
-                  height="96"
-                  src={activeTypeGlyph}
-                  width="96"
-                />
-              )}
               <button
                 className={`button-core ${
                   arena.status === "active" && arena.visitorPressed

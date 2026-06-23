@@ -23,7 +23,7 @@ Original prompt: Build and iterate the Normies Type Button web game, now global-
 - Moved the Normies Button logo into the arena module and changed the active Type label to a right-aligned readout in that same module header.
 - Replaced the main button raster with a rounded logo-matched pixel plunger plus a compressed depressed state, regenerated sharper corner filigree from the reference sheet, moved desktop modules lower, and added active Type glyph art beside the upper-right Type readout.
 - Renamed the README title to "Normies Button" and changed the mobile arena so the centered logo, Type readout, clock, and button appear before the Type stack.
-- Added mobile haptic/tap feedback for valid button presses, a subtle active-Type echo glyph above the button, denser mobile Type rows, and a compact latest-3 mobile history panel.
+- Added mobile haptic/tap feedback for valid button presses, denser mobile Type rows, and a compact latest-3 mobile history panel.
 
 ## TODO
 - None currently known.
