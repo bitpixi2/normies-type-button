@@ -455,26 +455,6 @@ h2 {
   background: #ffffff;
 }
 
-.number-panel-top {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.number-panel-top div {
-  display: grid;
-  gap: 3px;
-}
-
-.number-panel-top strong {
-  color: var(--ink);
-  font-size: 1.7rem;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-}
-
-.number-panel-top > span,
 .number-help {
   color: var(--muted);
   font-size: 0.8rem;
@@ -712,10 +692,6 @@ h2 {
     top: 39%;
     transform: translate(-50%, -50%);
     font-size: 1rem;
-  }
-
-  .number-panel-top strong {
-    font-size: 1.45rem;
   }
 
   .history-run {

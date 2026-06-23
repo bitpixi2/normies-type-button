@@ -355,41 +355,9 @@ export function App() {
               label="Presses"
               value={arena.totalPresses.toString()}
             />
-            <Metric
-              icon={<PixelIcon name="timer" />}
-              label="Last"
-              value={
-                arena.lastPress
-                  ? `${arena.lastPress.type} ${formatClock(
-                      arena.lastPress.secondsWaited
-                    )}`
-                  : "--"
-              }
-            />
-            <Metric
-              icon={<PixelIcon name="trophy" />}
-              label="You"
-              value={ownType ?? "--"}
-            />
           </div>
 
           <section className="number-panel" aria-label="Next round number">
-            <div className="number-panel-top">
-              <div>
-                <span className="eyebrow">This Round's #</span>
-                <strong>
-                  {arena.featuredNumber
-                    ? `#${formatSubmittedNumber(arena.featuredNumber.value)}`
-                    : "--"}
-                </strong>
-              </div>
-              <span>
-                {arena.featuredNumber
-                  ? `by #${arena.featuredNumber.visitorTag}`
-                  : "none"}
-              </span>
-            </div>
-
             <form className="number-form" onSubmit={handleNumberSubmit}>
               <label htmlFor="round-number">Send In #</label>
               <div className="number-entry">

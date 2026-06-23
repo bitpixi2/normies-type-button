@@ -13,6 +13,7 @@ Original prompt: Build and iterate the Normies Type Button web game, now global-
 - Added a shared next-round number queue in the right panel. Submitted numbers show on the following round, with current and pending number state stored in the Worker.
 - Swapped the main button to generated raster button crops and added a custom pixel cursor asset.
 - Cleaned up the generated button presentation: no visible Press/icon label, Wait only on locked rounds, full transparent button crops without the ellipse mask, and shorter next-round number helper copy.
+- Trimmed the right panel to save vertical room: removed the Last/You metric cards and removed the current-round number display above the Send In # form.
 
 ## TODO
 - None currently known.
