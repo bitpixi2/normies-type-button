@@ -53,7 +53,7 @@ input {
   width: min(1400px, 108vw);
   height: min(900px, 96vh);
   pointer-events: none;
-  background-image: url("/assets/hud-filigree.png");
+  background-image: url("/assets/normies-hud-filigree.png");
   background-position: center top;
   background-repeat: no-repeat;
   background-size: contain;
@@ -70,7 +70,7 @@ input {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  height: 104px;
+  height: 118px;
   max-width: 1180px;
   margin: 0 auto 8px;
 }
@@ -102,7 +102,7 @@ h1 {
 
 .brand-logo {
   display: block;
-  width: clamp(260px, 30vw, 360px);
+  width: clamp(230px, 28vw, 330px);
   height: auto;
   image-rendering: pixelated;
 }
@@ -618,12 +618,12 @@ h2 {
   .topbar {
     align-items: flex-start;
     flex-direction: column;
-    height: 96px;
+    height: 116px;
     margin-bottom: 8px;
   }
 
   .brand-logo {
-    width: min(300px, 86vw);
+    width: min(285px, 82vw);
   }
 
   .arena {

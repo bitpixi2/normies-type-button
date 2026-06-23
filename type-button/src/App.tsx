@@ -215,10 +215,10 @@ export function App() {
         <div className="brand-lockup">
           <h1 className="brand-logo-title">
             <img
-              alt="Dead and Breakfast"
+              alt="Normies Button"
               className="brand-logo"
               height="252"
-              src="/assets/dead-breakfast-logo.png"
+              src="/assets/normies-button-logo.png"
               width="760"
             />
           </h1>
