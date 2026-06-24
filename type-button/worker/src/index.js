@@ -4,9 +4,11 @@ const HISTORY_LIMIT = 24;
 const HISTORY_STORAGE_KEY = "pressHistory";
 const PENDING_NUMBER_STORAGE_KEY = "pendingNumber";
 const TYPE_IMAGES_STORAGE_KEY = "typeImages";
+const TYPE_IMAGE_SVG_STORAGE_PREFIX = "typeImageSvg:";
 const MAX_SUBMITTED_NUMBER = 9999;
 const NUMBER_LOG_LIMIT = 250;
 const NORMIES_API_BASE = "https://api.normies.art";
+const PUBLIC_API_BASE = "https://normies-type-button-api.deviantclaw.workers.dev";
 const TYPES = ["Human", "Cat", "Alien", "Agent", "Zombie"];
 const DEFAULT_TYPE_IMAGE_IDS = {
   Human: 0,
@@ -14,6 +16,13 @@ const DEFAULT_TYPE_IMAGE_IDS = {
   Alien: 615,
   Agent: 108,
   Zombie: 1
+};
+const DEFAULT_TYPE_IMAGE_ASSETS = {
+  Human: "/assets/normie-type-human.svg",
+  Cat: "/assets/normie-type-cat.svg",
+  Alien: "/assets/normie-type-alien.svg",
+  Agent: "/assets/normie-type-agent.svg",
+  Zombie: "/assets/normie-type-zombie.svg"
 };
 const INITIAL_COUNTS = {
   Human: 0,
@@ -75,6 +84,10 @@ export class ArenaObject {
         return json(
           await this.submitNumber(body.visitorId || "", body.number)
         );
+      }
+
+      if (url.pathname.startsWith("/type-image/") && request.method === "GET") {
+        return this.readTypeImage(url.pathname);
       }
 
       if (url.pathname === "/number-log" && request.method === "GET") {
@@ -194,7 +207,8 @@ export class ArenaObject {
       throw new Error("That's not a valid Normies ID #, mate!");
     }
 
-    const imageUrl = imageUrlForNormie(value);
+    const imageSvg = await lookupNormieImageSvg(value);
+    const imageUrl = typeImageRoute(details.normieType, value, pendingTimestamp(now));
     const pendingNumber = {
       value,
       owner: details.owner,
@@ -219,6 +233,7 @@ export class ArenaObject {
       owner: details.owner,
       normieType: details.normieType,
       imageUrl,
+      imageSvg,
       visitorTag: pendingNumber.visitorTag,
       timestamp: pendingNumber.timestamp,
       source: "submitted"
@@ -342,6 +357,30 @@ export class ArenaObject {
     const images = await this.getTypeImages();
     images[type] = normalizeTypeImage(image, type);
     await this.state.storage.put(TYPE_IMAGES_STORAGE_KEY, images);
+    if (typeof image.imageSvg === "string" && image.imageSvg.trim()) {
+      await this.state.storage.put(typeImageSvgStorageKey(type), image.imageSvg);
+    }
+  }
+
+  async readTypeImage(pathname) {
+    const match = pathname.match(/^\/type-image\/([a-z]+)\.svg$/);
+    const type = match ? typeFromSlug(match[1]) : null;
+    if (!type) {
+      return new Response("Not found", { status: 404, headers: corsHeaders });
+    }
+
+    const svg = await this.state.storage.get(typeImageSvgStorageKey(type));
+    if (!svg) {
+      return new Response("Not found", { status: 404, headers: corsHeaders });
+    }
+
+    return new Response(svg, {
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "image/svg+xml; charset=UTF-8",
+        "Cache-Control": "public, max-age=60, s-maxage=300"
+      }
+    });
   }
 
   async consumePendingNumber() {
@@ -719,8 +758,25 @@ async function lookupNormieType(tokenId) {
   }
 }
 
+async function lookupNormieImageSvg(tokenId) {
+  const response = await fetch(imageUrlForNormie(tokenId));
+  if (!response.ok) {
+    throw new Error("That's not a valid Normies ID #, mate!");
+  }
+  return response.text();
+}
+
 function imageUrlForNormie(tokenId) {
   return `${NORMIES_API_BASE}/normie/${tokenId}/image.svg`;
+}
+
+function typeImageRoute(type, tokenId, timestamp) {
+  const cacheKey = encodeURIComponent(`${tokenId}:${timestamp}`);
+  return `${PUBLIC_API_BASE}/type-image/${type.toLowerCase()}.svg?v=${cacheKey}`;
+}
+
+function pendingTimestamp(now) {
+  return new Date(now).toISOString();
 }
 
 function normalizeNumberRecord(value) {
@@ -779,9 +835,9 @@ function normalizeTypeImage(value, type) {
     owner: typeof candidate.owner === "string" ? candidate.owner : null,
     normieType,
     imageUrl:
-      typeof candidate.imageUrl === "string"
-        ? candidate.imageUrl
-        : imageUrlForNormie(tokenValue),
+      candidate.source === "submitted"
+        ? typeImageRoute(type, tokenValue, candidate.timestamp || "")
+        : DEFAULT_TYPE_IMAGE_ASSETS[type],
     visitorTag:
       typeof candidate.visitorTag === "string" ? candidate.visitorTag : "----",
     timestamp:
@@ -790,6 +846,14 @@ function normalizeTypeImage(value, type) {
         : new Date(0).toISOString(),
     source: candidate.source === "submitted" ? "submitted" : "default"
   };
+}
+
+function typeImageSvgStorageKey(type) {
+  return `${TYPE_IMAGE_SVG_STORAGE_PREFIX}${type}`;
+}
+
+function typeFromSlug(slug) {
+  return TYPES.find((type) => type.toLowerCase() === slug) || null;
 }
 
 function secondsRemaining(expiresAt, now) {

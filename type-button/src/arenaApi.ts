@@ -134,23 +134,23 @@ export function fallbackArenaState(visitorId: string): ArenaState {
 }
 
 export function fallbackTypeImages(): Record<NormieType, ArenaTypeImage> {
-  const defaults: Record<NormieType, number> = {
-    Human: 0,
-    Cat: 133,
-    Alien: 615,
-    Agent: 108,
-    Zombie: 1
+  const defaults: Record<NormieType, { value: number; imageUrl: string }> = {
+    Human: { value: 0, imageUrl: "/assets/normie-type-human.svg" },
+    Cat: { value: 133, imageUrl: "/assets/normie-type-cat.svg" },
+    Alien: { value: 615, imageUrl: "/assets/normie-type-alien.svg" },
+    Agent: { value: 108, imageUrl: "/assets/normie-type-agent.svg" },
+    Zombie: { value: 1, imageUrl: "/assets/normie-type-zombie.svg" }
   };
 
   return Object.fromEntries(
-    Object.entries(defaults).map(([type, value]) => [
+    Object.entries(defaults).map(([type, defaults]) => [
       type,
       {
         type: type as NormieType,
-        value,
+        value: defaults.value,
         owner: null,
         normieType: type as NormieType,
-        imageUrl: `https://api.normies.art/normie/${value}/image.svg`,
+        imageUrl: defaults.imageUrl,
         visitorTag: "----",
         timestamp: new Date(0).toISOString(),
         source: "default"

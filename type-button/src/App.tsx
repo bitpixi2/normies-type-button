@@ -646,9 +646,8 @@ function PrivacyCopy() {
       </p>
       <p>
         When you send in a Normie ID, the backend stores that ID, the resolved
-        owner wallet, Type, image URL from the Normies API, the round,
-        timestamp, and visitor tag. The app does not ask for your name, email,
-        or wallet.
+        owner wallet, Type, replacement image data, the round, timestamp, and
+        visitor tag. The app does not ask for your name, email, or wallet.
       </p>
     </div>
   );
