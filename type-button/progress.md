@@ -44,7 +44,9 @@ Original prompt: Build and iterate the Normies Type Button web game, now global-
 - Normalized the Type glyph PNG sprites to an equal visible height with transparent padding so Live History icons no longer look clipped or uneven.
 - Replaced the Type glyph PNGs again by slicing the user-supplied generated sprite sheet, preserving the sharper Human/Cat/Alien/Agent/Zombie style from that image.
 - Suppressed Type image flash during initial backend hydration, including React StrictMode fallback passes, so submitted Type images no longer flash on page refresh; later real Type image replacements still flash.
-- Centered the desktop Normies Button logo inside the arena module and moved the desktop button/timer/bar column left to better balance its left/right padding.
+- Centered the desktop Normies Button logo inside the arena module and tuned the desktop button/timer/bar column position to avoid sitting too far right or too far left.
+- Wrapped remaining visible numeric values such as Round and lead-margin numbers in the number font, removed the arena status/result bar on desktop and mobile, reduced Live History to latest 3 rows on all viewports, and kept the lead sentence on one white line.
+- Added a Live History "More" link that opens the public backend `/state` JSON in a new tab so the tracked recentPresses history can be inspected beyond the visible 3 rows.
 
 ## TODO
 - Configure the `NUMBER_LOG_KEY` Worker secret before using the private `/number-log` endpoint.

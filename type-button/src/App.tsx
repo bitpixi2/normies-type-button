@@ -3,7 +3,8 @@ import {
   useEffect,
   useMemo,
   useRef,
-  useState
+  useState,
+  type ReactNode
 } from "react";
 import {
   ROUND_SECONDS,
@@ -13,6 +14,7 @@ import {
   getTypeForSecondsRemaining
 } from "./game";
 import {
+  ARENA_API_BASE,
   fallbackArenaState,
   fetchArenaState,
   pressArena,
@@ -28,7 +30,7 @@ import {
 } from "./pixelSprites";
 
 const POLL_MS = 1000;
-const HISTORY_VISIBLE_LIMIT = 5;
+const HISTORY_VISIBLE_LIMIT = 3;
 const MOBILE_HISTORY_VISIBLE_LIMIT = 3;
 const HISTORY_FLASH_MS = 900;
 const TYPE_IMAGE_FLASH_MS = 1100;
@@ -334,6 +336,9 @@ export function App() {
                 width="760"
               />
             </h1>
+            <p className="brand-instruction">
+              Wait for your favorite Type, then press the button.
+            </p>
             <div className="header-clock" aria-live="polite">
               {formatClock(displayedRemaining)}
             </div>
@@ -412,26 +417,6 @@ export function App() {
             </div>
           </div>
 
-          <div className="result-line">
-            {arena.status === "idle" && <span>Start the shared timer</span>}
-            {arena.status === "expired" && <span>Next round is starting</span>}
-            {arena.status === "active" && !arena.visitorPressed && activeType && (
-              <span>
-                <span className="result-sentence">
-                  {activeType} window active.
-                </span>
-                {" "}
-                <span className="result-sentence">
-                  One press this round.
-                </span>
-              </span>
-            )}
-            {arena.status === "active" && arena.visitorPressed && ownType && (
-              <span>
-                You pressed as {ownType}. Next round is live.
-              </span>
-            )}
-          </div>
         </section>
 
         <section
@@ -440,7 +425,9 @@ export function App() {
         >
           <div className="score-heading">
             <div>
-              <h2>Round {arena.roundId}</h2>
+              <h2>
+                Round <span className="number-text">{arena.roundId}</span>
+              </h2>
             </div>
           </div>
 
@@ -483,11 +470,21 @@ export function App() {
 
           <div className="history-heading">
             <span className="eyebrow">Live History</span>
-            <span className="history-limit history-limit-wide">
-              latest {HISTORY_VISIBLE_LIMIT}
-            </span>
-            <span className="history-limit history-limit-mobile">
-              latest {MOBILE_HISTORY_VISIBLE_LIMIT}
+            <span className="history-actions">
+              <span className="history-limit history-limit-wide">
+                latest {HISTORY_VISIBLE_LIMIT}
+              </span>
+              <span className="history-limit history-limit-mobile">
+                latest {MOBILE_HISTORY_VISIBLE_LIMIT}
+              </span>
+              <a
+                className="history-more"
+                href={`${ARENA_API_BASE}/state`}
+                rel="noreferrer"
+                target="_blank"
+              >
+                More
+              </a>
             </span>
           </div>
 
@@ -740,7 +737,9 @@ function GlobalStats({ stats: rawStats }: { stats: ArenaState["stats"] }) {
           <strong>{stats.countryCount.toLocaleString()}</strong>
           <span>{pluralizeCountry(stats.countryCount)}</span>
         </div>
-        <div className="stat-chip stat-chip-wide">{leadingCopy}</div>
+        <div className="stat-chip stat-chip-wide">
+          {renderGlobalLeadCopy(stats, leadingCopy)}
+        </div>
       </div>
     </section>
   );
@@ -785,6 +784,43 @@ export function formatGlobalLeadCopy(stats: ArenaState["stats"]): string {
   }
 
   return `${pluralizeType(tiedTypes[0])} leading by ${stats.leadMargin} ${pluralizePress(stats.leadMargin)}`;
+}
+
+function renderGlobalLeadCopy(
+  stats: ArenaState["stats"],
+  fallbackCopy: string
+): ReactNode {
+  const rankedTypes = TYPE_WINDOWS.map(({ type }) => ({
+    type,
+    presses: stats.typeCounts[type] ?? 0
+  })).sort((a, b) => b.presses - a.presses);
+  const topCount = rankedTypes[0]?.presses ?? 0;
+
+  if (topCount <= 0) {
+    return fallbackCopy;
+  }
+
+  const tiedTypes = rankedTypes
+    .filter((entry) => entry.presses === topCount)
+    .map((entry) => entry.type);
+
+  if (tiedTypes.length > 1) {
+    return (
+      <>
+        {formatTypeList(tiedTypes)} are tied at{" "}
+        <span className="number-text">{topCount}</span>{" "}
+        {pluralizePress(topCount)}
+      </>
+    );
+  }
+
+  return (
+    <>
+      {pluralizeType(tiedTypes[0])} leading by{" "}
+      <span className="number-text">{stats.leadMargin}</span>{" "}
+      {pluralizePress(stats.leadMargin)}
+    </>
+  );
 }
 
 function pluralizePress(count: number): string {

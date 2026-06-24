@@ -124,6 +124,19 @@ h1 {
   image-rendering: pixelated;
 }
 
+.brand-instruction {
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.2;
+  margin-top: 8px;
+  text-align: center;
+}
+
+.number-text {
+  font-family: var(--number-font);
+  font-variant-numeric: tabular-nums;
+}
+
 h2 {
   font-size: 1.25rem;
   font-weight: 500;
@@ -494,6 +507,7 @@ h2 {
 @media (min-width: 981px) {
   .arena-header {
     grid-template-columns: 1fr;
+    gap: 0;
     justify-items: center;
   }
 
@@ -515,7 +529,7 @@ h2 {
     justify-items: center;
     align-content: center;
     gap: 8px;
-    transform: translateX(clamp(-20px, -1.5vw, -10px));
+    transform: translateX(clamp(4px, 0.7vw, 10px));
   }
 
   .button-core {
@@ -580,20 +594,6 @@ h2 {
 .icon-button:focus-visible {
   outline: 3px solid #111111;
   outline-offset: 4px;
-}
-
-.result-line {
-  min-height: 40px;
-  padding: 10px 12px;
-  border: 2px solid var(--ink);
-  background: #ffffff;
-  color: var(--ink);
-  font-weight: 500;
-  text-align: center;
-}
-
-.result-sentence {
-  display: block;
 }
 
 .scoreboard {
@@ -717,6 +717,29 @@ h2 {
   text-transform: uppercase;
 }
 
+.history-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.history-more {
+  color: var(--ink);
+  font-size: 0.82rem;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  text-transform: uppercase;
+}
+
+.history-more:hover,
+.history-more:focus-visible {
+  background: #111111;
+  color: #ffffff;
+  outline: 2px solid #111111;
+  outline-offset: 2px;
+}
+
 .history-limit-mobile {
   display: none;
 }
@@ -790,9 +813,16 @@ h2 {
 }
 
 .stat-chip-wide {
+  display: block;
   grid-column: 1 / -1;
   min-height: 42px;
   background: #111111;
+  color: #ffffff;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.stat-chip-wide .number-text {
   color: #ffffff;
 }
 
