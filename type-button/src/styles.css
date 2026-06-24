@@ -13,6 +13,7 @@
   --line: #111111;
   --soft-line: #c4c4c4;
   --panel: #ffffff;
+  --number-font: "VT323", "Pixelify Sans", ui-monospace, monospace;
 }
 
 * {
@@ -411,6 +412,7 @@ h2 {
 
 .stack-row span,
 .stack-row em {
+  font-family: var(--number-font);
   font-size: 0.85rem;
   font-style: normal;
   font-variant-numeric: tabular-nums;
@@ -445,6 +447,7 @@ h2 {
 .clock {
   min-width: 6ch;
   color: #111111;
+  font-family: var(--number-font);
   font-variant-numeric: tabular-nums;
   font-size: 5.4rem;
   font-weight: 500;
@@ -627,6 +630,7 @@ h2 {
 .number-entry input {
   min-width: 0;
   padding: 7px 9px;
+  font-family: var(--number-font);
 }
 
 .number-entry button {
@@ -647,6 +651,7 @@ h2 {
 }
 
 .history-limit {
+  font-family: var(--number-font);
   font-size: 0.82rem;
   font-variant-numeric: tabular-nums;
   text-transform: uppercase;
@@ -696,6 +701,7 @@ h2 {
 }
 
 .stat-chip strong {
+  font-family: var(--number-font);
   font-size: 1.25rem;
   font-variant-numeric: tabular-nums;
   line-height: 1;
@@ -734,8 +740,9 @@ h2 {
   gap: 2px;
 }
 
-.history-main strong,
+.history-main span,
 .history-times span {
+  font-family: var(--number-font);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1002,7 +1009,7 @@ h2 {
 
   .history-main span,
   .history-times span {
-    font-size: 0.68rem;
+    font-size: 0.82rem;
   }
 
   .history-list {
@@ -1029,7 +1036,7 @@ h2 {
   }
 
   .stat-chip strong {
-    font-size: 1rem;
+    font-size: 1.15rem;
   }
 
   .history-run:nth-of-type(n + 4) {
@@ -1062,7 +1069,7 @@ h2 {
 
   .stack-row span,
   .stack-row em {
-    font-size: 0.66rem;
+    font-size: 0.86rem;
   }
 
   .normie-tile,

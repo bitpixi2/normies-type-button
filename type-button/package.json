@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@fontsource/pixelify-sans": "^5.2.7",
+    "@fontsource/vt323": "^5.2.7",
     "@vitejs/plugin-react": "^5.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
