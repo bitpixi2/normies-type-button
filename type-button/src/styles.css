@@ -304,7 +304,7 @@ h2 {
   color: #111111;
   font-family: var(--number-font);
   font-variant-numeric: tabular-nums;
-  font-size: 5.4rem;
+  font-size: 4.2rem;
   font-weight: 500;
   line-height: 0.9;
   text-align: right;
@@ -492,6 +492,16 @@ h2 {
 }
 
 @media (min-width: 981px) {
+  .button-console {
+    align-items: stretch;
+  }
+
+  .clock-shell {
+    min-height: 100%;
+    align-content: stretch;
+    grid-template-rows: auto 1fr auto;
+  }
+
   .button-core {
     order: 1;
     justify-self: center;
@@ -504,10 +514,11 @@ h2 {
   }
 
   .progress-track {
-    order: 2;
-    justify-self: center;
+    order: 3;
+    align-self: end;
+    justify-self: start;
     width: min(340px, 82%);
-    transform: translateY(-8px);
+    transform: translate(12px, 11px);
   }
 }
 

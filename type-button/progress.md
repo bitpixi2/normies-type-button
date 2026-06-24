@@ -37,6 +37,7 @@ Original prompt: Build and iterate the Normies Type Button web game, now global-
 - Removed the desktop cursor trail, removed all visible button label text, and moved the desktop timer into the arena header opposite the Normies Button logo.
 - Lowered the desktop main modules and gave the footer more top spacing so the panels sit clear of the corner filigree background.
 - Changed the Global Leaderboard Presses stat chip to use the same grey family as the main button with light text on desktop and mobile.
+- Reduced the desktop header timer size and pinned the countdown bar to the bottom of the Type stack beside the final Type row.
 
 ## TODO
 - Configure the `NUMBER_LOG_KEY` Worker secret before using the private `/number-log` endpoint.
