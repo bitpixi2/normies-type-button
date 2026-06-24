@@ -135,7 +135,26 @@ export async function submitRoundNumber(
   visitorId: string,
   number: number
 ): Promise<ArenaState> {
-  return requestArena("/number", { visitorId, number });
+  const response = await fetch(`${ARENA_API_BASE}/number`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ visitorId, number })
+  });
+  const payload = (await response.json()) as
+    | ArenaState
+    | { error?: string; state?: ArenaState };
+
+  if (!response.ok) {
+    throw new Error(
+      "error" in payload && payload.error ? payload.error : "Invalid number"
+    );
+  }
+
+  if ("state" in payload && payload.state) {
+    return payload.state;
+  }
+
+  return payload as ArenaState;
 }
 
 async function requestArena(path: string, body?: unknown): Promise<ArenaState> {

@@ -86,6 +86,7 @@ input {
 
 h1,
 h2,
+h3,
 p {
   margin: 0;
 }
@@ -557,32 +558,6 @@ h2 {
   opacity: 0.42;
 }
 
-.metric-row {
-  display: grid;
-  gap: 10px;
-}
-
-.metric {
-  display: grid;
-  grid-template-columns: 28px 1fr auto;
-  align-items: center;
-  gap: 10px;
-  min-height: 46px;
-  padding: 10px;
-  border: 2px solid var(--ink);
-  background: #ffffff;
-}
-
-.metric svg {
-  width: 28px;
-  height: 28px;
-  fill: currentColor;
-}
-
-.metric strong {
-  font-variant-numeric: tabular-nums;
-}
-
 .number-panel {
   display: grid;
   gap: 10px;
@@ -594,6 +569,11 @@ h2 {
 .number-help {
   color: var(--muted);
   font-size: 0.8rem;
+}
+
+.number-error {
+  color: var(--ink);
+  font-size: 0.84rem;
 }
 
 .number-form {
@@ -659,6 +639,19 @@ h2 {
   gap: 8px;
   max-height: 292px;
   overflow: hidden;
+}
+
+.global-leaderboard {
+  display: grid;
+  gap: 8px;
+}
+
+.global-leaderboard h3 {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 500;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
 .global-stats {
@@ -963,16 +956,6 @@ h2 {
     padding: 16px;
   }
 
-  .metric {
-    min-height: 40px;
-    padding: 8px 10px;
-  }
-
-  .metric svg {
-    width: 24px;
-    height: 24px;
-  }
-
   .number-panel {
     gap: 8px;
     padding: 10px;
@@ -1007,6 +990,14 @@ h2 {
 
   .global-stats {
     gap: 6px;
+  }
+
+  .global-leaderboard {
+    gap: 6px;
+  }
+
+  .global-leaderboard h3 {
+    font-size: 0.78rem;
   }
 
   .stat-chip {

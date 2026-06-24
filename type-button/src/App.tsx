@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ROUND_SECONDS,
@@ -23,8 +22,7 @@ import {
   type TypeProfile
 } from "./normiesApi";
 import {
-  PixelArrow,
-  PixelIcon
+  PixelArrow
 } from "./pixelSprites";
 
 const POLL_MS = 1000;
@@ -51,6 +49,7 @@ export function App() {
   const [nowMs, setNowMs] = useState(Date.now());
   const [isBusy, setIsBusy] = useState(false);
   const [numberInput, setNumberInput] = useState("");
+  const [numberError, setNumberError] = useState("");
   const [isNumberBusy, setIsNumberBusy] = useState(false);
   const [flashedPressKey, setFlashedPressKey] = useState<string | null>(null);
   const [isButtonTapping, setIsButtonTapping] = useState(false);
@@ -282,18 +281,20 @@ export function App() {
     event.preventDefault();
     if (isNumberBusy) return;
 
-    const parsedNumber = Number.parseInt(numberInput, 10);
-    if (!Number.isInteger(parsedNumber) || parsedNumber < 0 || parsedNumber > 9999) {
+    const parsedNumber = normalizeNormieIdInput(numberInput);
+    if (parsedNumber === null) {
+      setNumberError("That's not a valid Normies ID #, mate!");
       return;
     }
 
+    setNumberError("");
     setIsNumberBusy(true);
     try {
       const state = await submitRoundNumber(visitorId, parsedNumber);
       setArena(state);
       setNumberInput("");
     } catch {
-      setNumberInput("");
+      setNumberError("That's not a valid Normies ID #, mate!");
     } finally {
       setIsNumberBusy(false);
     }
@@ -423,29 +424,23 @@ export function App() {
             <div>
               <h2>Round {arena.roundId}</h2>
             </div>
-            <PixelIcon className="heading-icon" name="users" />
-          </div>
-
-          <div className="metric-row">
-            <Metric
-              icon={<PixelIcon name="activity" />}
-              label="Presses"
-              value={arena.totalPresses.toString()}
-            />
           </div>
 
           <section className="number-panel" aria-label="Next round number">
             <form className="number-form" onSubmit={handleNumberSubmit}>
-              <label htmlFor="round-number">Send In #</label>
+              <label htmlFor="round-number">Send In Normie #</label>
               <div className="number-entry">
                 <input
                   id="round-number"
-                  inputMode="numeric"
-                  max="9999"
-                  min="0"
-                  onChange={(event) => setNumberInput(event.target.value)}
-                  placeholder="0-9999"
-                  type="number"
+                  aria-describedby={numberError ? "round-number-error" : undefined}
+                  aria-invalid={numberError ? "true" : "false"}
+                  inputMode="text"
+                  onChange={(event) => {
+                    setNumberInput(event.target.value);
+                    if (numberError) setNumberError("");
+                  }}
+                  pattern="#?[0-9]*"
+                  type="text"
                   value={numberInput}
                 />
                 <button type="submit" disabled={isNumberBusy}>
@@ -453,11 +448,18 @@ export function App() {
                 </button>
               </div>
             </form>
+            {numberError && (
+              <div className="number-error" id="round-number-error" role="alert">
+                {numberError}
+              </div>
+            )}
 
             <div className="number-help">
               They will show when the next round starts!
             </div>
           </section>
+
+          <GlobalStats stats={arena.stats} />
 
           <div className="history-heading">
             <span className="eyebrow">Live History</span>
@@ -494,8 +496,6 @@ export function App() {
               <div className="empty-state">No presses</div>
             )}
           </div>
-
-          <GlobalStats stats={arena.stats} />
         </section>
 
       </main>
@@ -636,24 +636,6 @@ function formatSubmittedNumber(value: number): string {
   return value.toString().padStart(4, "0");
 }
 
-function Metric({
-  icon,
-  label,
-  value
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="metric">
-      {icon}
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </div>
-  );
-}
-
 function GlobalStats({ stats: rawStats }: { stats: ArenaState["stats"] }) {
   const stats = rawStats ?? {
     totalPresses: 0,
@@ -674,18 +656,40 @@ function GlobalStats({ stats: rawStats }: { stats: ArenaState["stats"] }) {
     : "No Type leading yet";
 
   return (
-    <section className="global-stats" aria-label="Global stats">
-      <div className="stat-chip">
-        <strong>{stats.totalPresses.toLocaleString()}</strong>
-        <span>{pluralizePress(stats.totalPresses)}</span>
+    <section className="global-leaderboard" aria-label="Global Leaderboard">
+      <h3>Global Leaderboard</h3>
+      <div className="global-stats">
+        <div className="stat-chip">
+          <strong>{stats.totalPresses.toLocaleString()}</strong>
+          <span>{pluralizePress(stats.totalPresses)}</span>
+        </div>
+        <div className="stat-chip">
+          <strong>{stats.countryCount.toLocaleString()}</strong>
+          <span>{pluralizeCountry(stats.countryCount)}</span>
+        </div>
+        <div className="stat-chip stat-chip-wide">{leadingCopy}</div>
       </div>
-      <div className="stat-chip">
-        <strong>{stats.countryCount.toLocaleString()}</strong>
-        <span>{pluralizeCountry(stats.countryCount)}</span>
-      </div>
-      <div className="stat-chip stat-chip-wide">{leadingCopy}</div>
     </section>
   );
+}
+
+export function normalizeNormieIdInput(input: string): number | null {
+  const trimmed = input.trim();
+  if (!/^#?\d+$/.test(trimmed)) {
+    return null;
+  }
+
+  const withoutHash = trimmed.startsWith("#") ? trimmed.slice(1) : trimmed;
+  if (!/^\d+$/.test(withoutHash)) {
+    return null;
+  }
+
+  const value = Number.parseInt(withoutHash, 10);
+  if (!Number.isInteger(value) || value < 1 || value > 9999) {
+    return null;
+  }
+
+  return value;
 }
 
 function pluralizePress(count: number): string {

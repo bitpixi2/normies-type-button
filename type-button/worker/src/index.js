@@ -631,9 +631,14 @@ function typeForSecondsRemaining(seconds) {
 }
 
 function parseSubmittedNumber(value) {
-  const number = Number.parseInt(String(value), 10);
-  if (!Number.isInteger(number) || number < 0 || number > MAX_SUBMITTED_NUMBER) {
-    throw new Error(`Number must be between 0 and ${MAX_SUBMITTED_NUMBER}`);
+  const raw = String(value).trim();
+  if (!/^\d+$/.test(raw)) {
+    throw new Error("That's not a valid Normies ID #, mate!");
+  }
+
+  const number = Number.parseInt(raw, 10);
+  if (!Number.isInteger(number) || number < 1 || number > MAX_SUBMITTED_NUMBER) {
+    throw new Error("That's not a valid Normies ID #, mate!");
   }
   return number;
 }
@@ -683,7 +688,7 @@ function normalizeNumberRecord(value) {
   const candidate = value;
   if (
     !Number.isInteger(candidate.value) ||
-    candidate.value < 0 ||
+    candidate.value < 1 ||
     candidate.value > MAX_SUBMITTED_NUMBER
   ) {
     return null;
