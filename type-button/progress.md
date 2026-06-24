@@ -43,6 +43,7 @@ Original prompt: Build and iterate the Normies Type Button web game, now global-
 - Updated the Send In Normie # helper copy to clarify that submitted Normies replace the matching Type image on the next turn.
 - Normalized the Type glyph PNG sprites to an equal visible height with transparent padding so Live History icons no longer look clipped or uneven.
 - Replaced the Type glyph PNGs again by slicing the user-supplied generated sprite sheet, preserving the sharper Human/Cat/Alien/Agent/Zombie style from that image.
+- Suppressed Type image flash during initial backend hydration, including React StrictMode fallback passes, so submitted Type images no longer flash on page refresh; later real Type image replacements still flash.
 
 ## TODO
 - Configure the `NUMBER_LOG_KEY` Worker secret before using the private `/number-log` endpoint.

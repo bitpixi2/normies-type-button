@@ -63,6 +63,7 @@ export function App() {
   const flashTimeoutRef = useRef<number | null>(null);
   const typeFlashTimeoutRef = useRef<number | null>(null);
   const typeImageKeysRef = useRef<Record<string, string> | null>(null);
+  const typeImagesHydratedRef = useRef(false);
   const tapTimeoutRef = useRef<number | null>(null);
   const idleTimeoutRef = useRef<number | null>(null);
 
@@ -139,6 +140,11 @@ export function App() {
     typeImageKeysRef.current = nextKeys;
 
     if (!previousKeys) return undefined;
+    if (isFallbackHydrationState(arena)) return undefined;
+    if (!typeImagesHydratedRef.current) {
+      typeImagesHydratedRef.current = true;
+      return undefined;
+    }
 
     const changedType = TYPE_WINDOWS.find(
       ({ type }) => previousKeys[type] && previousKeys[type] !== nextKeys[type]
@@ -699,6 +705,10 @@ function typeImageKeys(
       `${image.value}:${image.timestamp}:${image.imageUrl}`
     ])
   );
+}
+
+function isFallbackHydrationState(arena: ArenaState): boolean {
+  return arena.status === "idle" && arena.roundId === 0 && arena.totalPresses === 0;
 }
 
 function GlobalStats({ stats: rawStats }: { stats: ArenaState["stats"] }) {
