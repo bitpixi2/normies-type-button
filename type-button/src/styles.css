@@ -31,6 +31,10 @@ button {
   cursor: url("/assets/cursor-pixel.svg") 2 2, pointer;
 }
 
+a {
+  color: inherit;
+}
+
 input {
   font: inherit;
 }
@@ -132,6 +136,46 @@ h2 {
   margin: 0 auto;
 }
 
+.site-footer {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 14px;
+  max-width: 1180px;
+  margin: 18px auto 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  text-align: center;
+}
+
+.site-footer a,
+.site-footer button {
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.site-footer button {
+  padding: 0;
+}
+
+.site-footer a:hover,
+.site-footer a:focus-visible,
+.site-footer button:hover,
+.site-footer button:focus-visible {
+  color: #ffffff;
+  background: #111111;
+  outline: 2px solid #111111;
+  outline-offset: 2px;
+}
+
 .idle-overlay {
   position: fixed;
   inset: 0;
@@ -160,6 +204,58 @@ h2 {
   color: var(--ink);
   font-size: 1.5rem;
   text-transform: uppercase;
+}
+
+.info-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 6;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  background: rgba(17, 17, 17, 0.72);
+}
+
+.info-dialog {
+  display: grid;
+  width: min(560px, 92vw);
+  max-height: min(680px, 88vh);
+  gap: 16px;
+  overflow: auto;
+  border: 2px solid var(--ink);
+  background: var(--paper);
+  box-shadow: 8px 8px 0 #111111;
+  padding: 18px;
+}
+
+.info-dialog-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.info-dialog-heading button {
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 2px solid var(--ink);
+  background: #ffffff;
+  color: var(--ink);
+  text-transform: uppercase;
+}
+
+.info-dialog-heading button:hover,
+.info-dialog-heading button:focus-visible {
+  background: #111111;
+  color: #ffffff;
+}
+
+.info-copy {
+  display: grid;
+  gap: 12px;
+  color: #222222;
+  font-size: 0.96rem;
+  line-height: 1.35;
 }
 
 .idle-resume-button:hover,
@@ -703,6 +799,37 @@ h2 {
 @media (max-width: 640px) {
   .app {
     padding: 14px;
+  }
+
+  .site-footer {
+    gap: 7px 10px;
+    margin-top: 12px;
+    font-size: 0.72rem;
+  }
+
+  .info-overlay {
+    padding: 14px;
+  }
+
+  .info-dialog {
+    width: min(100%, 92vw);
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .info-dialog-heading h2 {
+    font-size: 1.05rem;
+  }
+
+  .info-dialog-heading button {
+    min-height: 32px;
+    padding: 5px 8px;
+    font-size: 0.78rem;
+  }
+
+  .info-copy {
+    font-size: 0.82rem;
+    line-height: 1.3;
   }
 
   .app::before {

@@ -32,6 +32,8 @@ const HISTORY_VISIBLE_LIMIT = 5;
 const MOBILE_HISTORY_VISIBLE_LIMIT = 3;
 const HISTORY_FLASH_MS = 900;
 const BUTTON_TAP_FEEDBACK_MS = 180;
+type InfoModal = "terms" | "privacy" | null;
+
 const configuredIdlePauseMs = Number.parseInt(
   import.meta.env.VITE_IDLE_PAUSE_MS || "",
   10
@@ -53,6 +55,7 @@ export function App() {
   const [flashedPressKey, setFlashedPressKey] = useState<string | null>(null);
   const [isButtonTapping, setIsButtonTapping] = useState(false);
   const [isIdlePaused, setIsIdlePaused] = useState(false);
+  const [infoModal, setInfoModal] = useState<InfoModal>(null);
   const flashTimeoutRef = useRef<number | null>(null);
   const tapTimeoutRef = useRef<number | null>(null);
   const idleTimeoutRef = useRef<number | null>(null);
@@ -130,6 +133,19 @@ export function App() {
     const intervalId = window.setInterval(() => setNowMs(Date.now()), 250);
     return () => window.clearInterval(intervalId);
   }, []);
+
+  useEffect(() => {
+    if (!infoModal) return undefined;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setInfoModal(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [infoModal]);
 
   const adjustedNow = nowMs + (arena.serverNow - Date.now());
   const displayedRemaining =
@@ -483,6 +499,33 @@ export function App() {
         </section>
 
       </main>
+      <footer className="site-footer" aria-label="Site links">
+        <span>
+          Made by{" "}
+          <a href="https://bitpixi.com" rel="noreferrer" target="_blank">
+            bitpixi
+          </a>
+        </span>
+        <button type="button" onClick={() => setInfoModal("terms")}>
+          Terms
+        </button>
+        <button type="button" onClick={() => setInfoModal("privacy")}>
+          Privacy
+        </button>
+        <a href="https://github.com/bitpixi2" rel="noreferrer" target="_blank">
+          GitHub
+        </a>
+        <a
+          href="https://github.com/bitpixi2/normies-button"
+          rel="noreferrer"
+          target="_blank"
+        >
+          Repo
+        </a>
+      </footer>
+      {infoModal && (
+        <InfoDialog kind={infoModal} onClose={() => setInfoModal(null)} />
+      )}
       {isIdlePaused && (
         <div className="idle-overlay" role="dialog" aria-modal="true">
           <div className="idle-module">
@@ -496,6 +539,80 @@ export function App() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function InfoDialog({
+  kind,
+  onClose
+}: {
+  kind: Exclude<InfoModal, null>;
+  onClose: () => void;
+}) {
+  const isPrivacy = kind === "privacy";
+
+  return (
+    <div className="info-overlay" role="presentation" onClick={onClose}>
+      <section
+        aria-labelledby="info-dialog-title"
+        aria-modal="true"
+        className="info-dialog"
+        onClick={(event) => event.stopPropagation()}
+        role="dialog"
+      >
+        <div className="info-dialog-heading">
+          <h2 id="info-dialog-title">
+            {isPrivacy ? "Privacy Policy" : "Terms"}
+          </h2>
+          <button type="button" onClick={onClose} aria-label="Close">
+            Close
+          </button>
+        </div>
+        {isPrivacy ? <PrivacyCopy /> : <TermsCopy />}
+      </section>
+    </div>
+  );
+}
+
+function TermsCopy() {
+  return (
+    <div className="info-copy">
+      <p>
+        Normies Button is an experimental shared timing game built for the
+        Normies hackathon.
+      </p>
+      <p>
+        Use it normally: press once per round, send in a Normie number if you
+        want it considered for the next round, and do not attack, spam, scrape,
+        or interfere with the service.
+      </p>
+      <p>
+        The app is provided as-is for play and judging. It may change, reset, or
+        go offline during development.
+      </p>
+    </div>
+  );
+}
+
+function PrivacyCopy() {
+  return (
+    <div className="info-copy">
+      <p>
+        The app stores button press events so it can show global stats like
+        total presses, countries represented, and which Type is leading.
+      </p>
+      <p>
+        When you press, it records the round, Type window, timing, timestamp,
+        a short anonymous visitor tag, IP address, and country/general location
+        from request metadata. Public stats are aggregated; raw IP addresses are
+        not shown on the page.
+      </p>
+      <p>
+        When you send in a Normie ID, the backend stores that ID, the resolved
+        owner wallet and Type from the Normies API, the round, timestamp, and
+        visitor tag. The app does not ask for your name, email, or wallet.
+      </p>
     </div>
   );
 }
