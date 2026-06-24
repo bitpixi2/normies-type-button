@@ -177,7 +177,8 @@ export function App() {
         lastPress: arena.lastPress,
         recentPresses,
         featuredNumber: arena.featuredNumber,
-        pendingNumber: arena.pendingNumber
+        pendingNumber: arena.pendingNumber,
+        stats: arena.stats
       });
 
     window.render_game_to_text = renderGameToText;
@@ -477,6 +478,8 @@ export function App() {
               <div className="empty-state">No presses</div>
             )}
           </div>
+
+          <GlobalStats stats={arena.stats} />
         </section>
 
       </main>
@@ -532,4 +535,51 @@ function Metric({
       <strong>{value}</strong>
     </div>
   );
+}
+
+function GlobalStats({ stats: rawStats }: { stats: ArenaState["stats"] }) {
+  const stats = rawStats ?? {
+    totalPresses: 0,
+    countryCount: 0,
+    typeCounts: {
+      Human: 0,
+      Cat: 0,
+      Alien: 0,
+      Agent: 0,
+      Zombie: 0
+    },
+    leadingType: null,
+    leadingCount: 0,
+    leadMargin: 0
+  };
+  const leadingCopy = stats.leadingType
+    ? `${pluralizeType(stats.leadingType)} leading by ${stats.leadMargin} ${pluralizePress(stats.leadMargin)}`
+    : "No Type leading yet";
+
+  return (
+    <section className="global-stats" aria-label="Global stats">
+      <div className="stat-chip">
+        <strong>{stats.totalPresses.toLocaleString()}</strong>
+        <span>{pluralizePress(stats.totalPresses)}</span>
+      </div>
+      <div className="stat-chip">
+        <strong>{stats.countryCount.toLocaleString()}</strong>
+        <span>{pluralizeCountry(stats.countryCount)}</span>
+      </div>
+      <div className="stat-chip stat-chip-wide">{leadingCopy}</div>
+    </section>
+  );
+}
+
+function pluralizePress(count: number): string {
+  return count === 1 ? "press" : "presses";
+}
+
+function pluralizeCountry(count: number): string {
+  return count === 1 ? "country" : "countries";
+}
+
+function pluralizeType(type: string): string {
+  if (type === "Zombie") return "Zombies";
+  return `${type}s`;
 }

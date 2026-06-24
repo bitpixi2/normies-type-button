@@ -30,8 +30,19 @@ export type ArenaPress = {
 
 export type ArenaNumber = {
   value: number;
+  owner: string | null;
+  normieType: NormieType | null;
   visitorTag: string;
   timestamp: string;
+};
+
+export type ArenaStats = {
+  totalPresses: number;
+  countryCount: number;
+  typeCounts: Record<NormieType, number>;
+  leadingType: NormieType | null;
+  leadingCount: number;
+  leadMargin: number;
 };
 
 export type ArenaState = {
@@ -47,6 +58,7 @@ export type ArenaState = {
   recentPresses: ArenaPress[];
   featuredNumber: ArenaNumber | null;
   pendingNumber: ArenaNumber | null;
+  stats: ArenaStats;
   visitorPressed: boolean;
   visitorRun: RunRecord | null;
 };
@@ -88,6 +100,20 @@ export function fallbackArenaState(visitorId: string): ArenaState {
     recentPresses: [],
     featuredNumber: null,
     pendingNumber: null,
+    stats: {
+      totalPresses: 0,
+      countryCount: 0,
+      typeCounts: {
+        Human: 0,
+        Cat: 0,
+        Alien: 0,
+        Agent: 0,
+        Zombie: 0
+      },
+      leadingType: null,
+      leadingCount: 0,
+      leadMargin: 0
+    },
     visitorPressed: false,
     visitorRun: null
   };

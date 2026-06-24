@@ -18,7 +18,7 @@ const INITIAL_COUNTS = {
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, x-number-log-key"
+  "Access-Control-Allow-Headers": "Content-Type, x-number-log-key, x-reset-key"
 };
 
 export default {
@@ -59,7 +59,7 @@ export class ArenaObject {
 
       if (url.pathname === "/press" && request.method === "POST") {
         const body = await readBody(request);
-        return json(await this.pressButton(body.visitorId || ""));
+        return json(await this.pressButton(body.visitorId || "", request));
       }
 
       if (url.pathname === "/number" && request.method === "POST") {
@@ -72,6 +72,11 @@ export class ArenaObject {
       if (url.pathname === "/number-log" && request.method === "GET") {
         this.assertNumberLogAccess(request);
         return json(await this.readNumberLog(url.searchParams));
+      }
+
+      if (url.pathname === "/press-log" && request.method === "GET") {
+        this.assertNumberLogAccess(request);
+        return json(await this.readPressLog(url.searchParams));
       }
 
       if (url.pathname === "/admin/reset" && request.method === "POST") {
@@ -108,7 +113,7 @@ export class ArenaObject {
     return this.stateForVisitor(nextRound, visitorId, now);
   }
 
-  async pressButton(visitorId) {
+  async pressButton(visitorId, request) {
     if (!visitorId) {
       throw new Error("Missing visitor id");
     }
@@ -158,6 +163,11 @@ export class ArenaObject {
     };
 
     await this.state.storage.put(pressKey, press);
+    await this.logPressEvent({
+      ...press,
+      pressKey,
+      ...requestLocation(request)
+    });
     const recentPresses = await this.addHistoryPress(press);
     await this.saveRound(nextRound);
     return this.stateForVisitor(nextRound, visitorId, now, recentPresses);
@@ -170,17 +180,20 @@ export class ArenaObject {
 
     const now = Date.now();
     const value = parseSubmittedNumber(submittedNumber);
+    const details = await lookupNormieDetails(value);
     const pendingNumber = {
       value,
+      owner: details.owner,
+      normieType: details.normieType,
       visitorTag: visitorTag(visitorId),
       timestamp: new Date(now).toISOString()
     };
 
     const { round, changed } = await this.normalizeRound(now);
-    const owner = await lookupNormieOwner(value);
     await this.logSubmittedNumber({
       tokenId: value,
-      owner,
+      owner: details.owner,
+      normieType: details.normieType,
       visitorTag: pendingNumber.visitorTag,
       timestamp: pendingNumber.timestamp,
       roundId: round.roundId
@@ -214,6 +227,7 @@ export class ArenaObject {
       round
     );
     const pendingNumber = await this.getPendingNumber();
+    const stats = this.readPressStats();
 
     return {
       status: round.status,
@@ -229,6 +243,7 @@ export class ArenaObject {
       recentPresses: history,
       featuredNumber: normalizeNumberRecord(round.featuredNumber),
       pendingNumber,
+      stats,
       visitorPressed: Boolean(visitorPress),
       visitorRun: visitorPress
         ? {
@@ -313,45 +328,48 @@ export class ArenaObject {
   }
 
   async logSubmittedNumber(entry) {
-    this.state.storage.sql.exec(
-      `CREATE TABLE IF NOT EXISTS submitted_number_log (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        token_id INTEGER NOT NULL,
-        owner TEXT,
-        visitor_tag TEXT NOT NULL,
-        round_id INTEGER NOT NULL,
-        submitted_at TEXT NOT NULL
-      )`
-    );
+    this.ensureSubmittedNumberTable();
     this.state.storage.sql.exec(
       `INSERT INTO submitted_number_log
-        (token_id, owner, visitor_tag, round_id, submitted_at)
-        VALUES (?, ?, ?, ?, ?)`,
+        (token_id, owner, normie_type, visitor_tag, round_id, submitted_at)
+        VALUES (?, ?, ?, ?, ?, ?)`,
       entry.tokenId,
       entry.owner,
+      entry.normieType,
       entry.visitorTag,
       entry.roundId,
       entry.timestamp
     );
   }
 
-  async readNumberLog(searchParams) {
-    const limit = parseLogLimit(searchParams.get("limit"));
+  ensureSubmittedNumberTable() {
     this.state.storage.sql.exec(
       `CREATE TABLE IF NOT EXISTS submitted_number_log (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         token_id INTEGER NOT NULL,
         owner TEXT,
+        normie_type TEXT,
         visitor_tag TEXT NOT NULL,
         round_id INTEGER NOT NULL,
         submitted_at TEXT NOT NULL
       )`
     );
+    try {
+      this.state.storage.sql.exec(
+        "ALTER TABLE submitted_number_log ADD COLUMN normie_type TEXT"
+      );
+    } catch {}
+  }
+
+  async readNumberLog(searchParams) {
+    const limit = parseLogLimit(searchParams.get("limit"));
+    this.ensureSubmittedNumberTable();
 
     const rows = [
       ...this.state.storage.sql.exec(
         `SELECT token_id AS tokenId,
           owner,
+          normie_type AS normieType,
           visitor_tag AS visitorTag,
           round_id AS roundId,
           submitted_at AS submittedAt
@@ -363,6 +381,117 @@ export class ArenaObject {
     ];
 
     return { submissions: rows };
+  }
+
+  logPressEvent(entry) {
+    this.ensurePressEventTable();
+    this.state.storage.sql.exec(
+      `INSERT OR IGNORE INTO press_event_log
+        (
+          press_key,
+          round_id,
+          type,
+          seconds_remaining,
+          seconds_waited,
+          visitor_tag,
+          ip_address,
+          country,
+          pressed_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      entry.pressKey,
+      entry.roundId,
+      entry.type,
+      entry.secondsRemaining,
+      entry.secondsWaited,
+      entry.visitorTag,
+      entry.ipAddress,
+      entry.country,
+      entry.timestamp
+    );
+  }
+
+  ensurePressEventTable() {
+    this.state.storage.sql.exec(
+      `CREATE TABLE IF NOT EXISTS press_event_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        press_key TEXT NOT NULL UNIQUE,
+        round_id INTEGER NOT NULL,
+        type TEXT NOT NULL,
+        seconds_remaining INTEGER NOT NULL,
+        seconds_waited INTEGER NOT NULL,
+        visitor_tag TEXT NOT NULL,
+        ip_address TEXT,
+        country TEXT,
+        pressed_at TEXT NOT NULL
+      )`
+    );
+  }
+
+  readPressStats() {
+    this.ensurePressEventTable();
+    const totals = [
+      ...this.state.storage.sql.exec(
+        `SELECT
+          COUNT(*) AS totalPresses,
+          COUNT(DISTINCT NULLIF(country, '')) AS countryCount
+        FROM press_event_log`
+      )
+    ][0] || { totalPresses: 0, countryCount: 0 };
+    const typeRows = [
+      ...this.state.storage.sql.exec(
+        `SELECT type, COUNT(*) AS presses
+        FROM press_event_log
+        GROUP BY type`
+      )
+    ];
+    const typeCounts = Object.fromEntries(TYPES.map((type) => [type, 0]));
+    for (const row of typeRows) {
+      if (TYPES.includes(row.type)) {
+        typeCounts[row.type] = Number(row.presses) || 0;
+      }
+    }
+    const sortedTypes = TYPES.map((type) => ({
+      type,
+      presses: typeCounts[type]
+    })).sort((a, b) => b.presses - a.presses);
+    const leader = sortedTypes[0];
+    const runnerUp = sortedTypes[1];
+    const leadMargin = Math.max(0, leader.presses - runnerUp.presses);
+
+    return {
+      totalPresses: Number(totals.totalPresses) || 0,
+      countryCount: Number(totals.countryCount) || 0,
+      typeCounts,
+      leadingType: leader.presses > 0 ? leader.type : null,
+      leadingCount: leader.presses,
+      leadMargin
+    };
+  }
+
+  async readPressLog(searchParams) {
+    const limit = parseLogLimit(searchParams.get("limit"));
+    this.ensurePressEventTable();
+
+    const rows = [
+      ...this.state.storage.sql.exec(
+        `SELECT
+          round_id AS roundId,
+          type,
+          seconds_remaining AS secondsRemaining,
+          seconds_waited AS secondsWaited,
+          visitor_tag AS visitorTag,
+          ip_address AS ipAddress,
+          country,
+          pressed_at AS pressedAt
+        FROM press_event_log
+        ORDER BY id DESC
+        LIMIT ?`,
+        limit
+      )
+    ];
+
+    return { presses: rows };
   }
 
   assertNumberLogAccess(request) {
@@ -385,6 +514,7 @@ export class ArenaObject {
   async resetBackend() {
     await this.state.storage.deleteAll();
     this.state.storage.sql.exec("DROP TABLE IF EXISTS submitted_number_log");
+    this.state.storage.sql.exec("DROP TABLE IF EXISTS press_event_log");
     const round = defaultRound();
     await this.saveRound(round);
     return this.stateForVisitor(round, "", Date.now(), []);
@@ -504,12 +634,34 @@ function parseLogLimit(value) {
   return Math.min(Math.max(parsed, 1), NUMBER_LOG_LIMIT);
 }
 
+async function lookupNormieDetails(tokenId) {
+  const [owner, normieType] = await Promise.all([
+    lookupNormieOwner(tokenId),
+    lookupNormieType(tokenId)
+  ]);
+  return { owner, normieType };
+}
+
 async function lookupNormieOwner(tokenId) {
   try {
     const response = await fetch(`${NORMIES_API_BASE}/normie/${tokenId}/owner`);
     if (!response.ok) return null;
     const data = await response.json();
     return typeof data.owner === "string" ? data.owner : null;
+  } catch {
+    return null;
+  }
+}
+
+async function lookupNormieType(tokenId) {
+  try {
+    const response = await fetch(`${NORMIES_API_BASE}/normie/${tokenId}`);
+    if (!response.ok) return null;
+    const data = await response.json();
+    const typeTrait = Array.isArray(data.attributes)
+      ? data.attributes.find((trait) => trait?.trait_type === "Type")
+      : null;
+    return TYPES.includes(typeTrait?.value) ? typeTrait.value : null;
   } catch {
     return null;
   }
@@ -529,6 +681,10 @@ function normalizeNumberRecord(value) {
 
   return {
     value: candidate.value,
+    owner: typeof candidate.owner === "string" ? candidate.owner : null,
+    normieType: TYPES.includes(candidate.normieType)
+      ? candidate.normieType
+      : null,
     visitorTag:
       typeof candidate.visitorTag === "string" ? candidate.visitorTag : "----",
     timestamp:
@@ -548,6 +704,20 @@ function visitorTag(visitorId) {
 
 function pressStorageKey(roundId, visitorId) {
   return `press:${roundId}:${visitorId}`;
+}
+
+function requestLocation(request) {
+  const forwardedFor = request.headers.get("x-forwarded-for") || "";
+  const firstForwardedIp = forwardedFor.split(",")[0]?.trim() || "";
+  return {
+    ipAddress:
+      request.headers.get("cf-connecting-ip") ||
+      firstForwardedIp ||
+      request.headers.get("x-real-ip") ||
+      null,
+    country:
+      typeof request.cf?.country === "string" ? request.cf.country : null
+  };
 }
 
 async function readBody(request) {
