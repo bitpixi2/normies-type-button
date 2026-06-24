@@ -492,21 +492,30 @@ h2 {
 }
 
 @media (min-width: 981px) {
+  .arena-header {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .brand-logo-title {
+    justify-self: center;
+  }
+
   .header-clock {
     display: none;
   }
 
   .button-console {
-    grid-template-columns: minmax(280px, 0.82fr) minmax(300px, 1fr);
+    grid-template-columns: minmax(280px, 0.88fr) minmax(300px, 0.95fr);
     align-items: center;
-    gap: clamp(28px, 3.2vw, 46px);
+    gap: clamp(24px, 2.6vw, 38px);
   }
 
   .clock-shell {
     justify-items: center;
     align-content: center;
     gap: 8px;
-    transform: translateX(clamp(18px, 2.2vw, 34px));
+    transform: translateX(clamp(-20px, -1.5vw, -10px));
   }
 
   .button-core {
