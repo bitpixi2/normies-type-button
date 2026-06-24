@@ -492,14 +492,21 @@ h2 {
 }
 
 @media (min-width: 981px) {
+  .header-clock {
+    display: none;
+  }
+
   .button-console {
-    align-items: stretch;
+    grid-template-columns: minmax(280px, 0.82fr) minmax(300px, 1fr);
+    align-items: center;
+    gap: clamp(28px, 3.2vw, 46px);
   }
 
   .clock-shell {
-    min-height: 100%;
-    align-content: stretch;
-    grid-template-rows: auto 1fr auto;
+    justify-items: center;
+    align-content: center;
+    gap: 8px;
+    transform: translateX(clamp(18px, 2.2vw, 34px));
   }
 
   .button-core {
@@ -510,15 +517,18 @@ h2 {
   }
 
   .clock {
-    display: none;
+    order: 2;
+    display: block;
+    font-size: 4.2rem;
+    line-height: 0.9;
+    text-align: center;
   }
 
   .progress-track {
     order: 3;
-    align-self: end;
-    justify-self: start;
-    width: min(340px, 82%);
-    transform: translate(12px, 11px);
+    justify-self: center;
+    width: min(300px, 78%);
+    transform: none;
   }
 }
 
@@ -664,7 +674,14 @@ h2 {
 .number-entry input {
   min-width: 0;
   padding: 7px 9px;
+  background: #ffffff;
   font-family: var(--number-font);
+  caret-color: #111111;
+}
+
+.number-entry input::selection {
+  background: #a6a6a6;
+  color: #ffffff;
 }
 
 .number-entry button {
@@ -754,6 +771,15 @@ h2 {
   color: #ffffff;
 }
 
+.stat-chip:nth-child(2) {
+  background: #ffffff;
+  color: #111111;
+}
+
+.stat-chip:nth-child(2) span {
+  color: var(--muted);
+}
+
 .stat-chip-wide {
   grid-column: 1 / -1;
   min-height: 42px;
@@ -764,7 +790,7 @@ h2 {
 .history-run,
 .empty-state {
   display: grid;
-  grid-template-columns: 12px minmax(74px, 1fr) auto;
+  grid-template-columns: 36px minmax(74px, 1fr) auto;
   align-items: center;
   gap: 10px;
   min-height: 48px;
@@ -805,11 +831,12 @@ h2 {
   text-align: center;
 }
 
-.run-dot {
-  width: 10px;
-  height: 10px;
-  border: 2px solid #111111;
-  background: #ffffff;
+.history-type-glyph {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: grayscale(1) contrast(1.2);
 }
 
 @keyframes history-panel-sync {

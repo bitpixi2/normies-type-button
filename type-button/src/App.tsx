@@ -493,7 +493,14 @@ export function App() {
                 }`}
                 key={`${historyPressKey(press)}-${index}`}
               >
-                <span className="run-dot" />
+                <img
+                  alt=""
+                  aria-hidden="true"
+                  className="history-type-glyph"
+                  height="32"
+                  src={typeGlyphSrc(press.type)}
+                  width="32"
+                />
                 <div className="history-main">
                   <strong>{press.type}</strong>
                   <span>

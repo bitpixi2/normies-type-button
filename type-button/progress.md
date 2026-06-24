@@ -38,6 +38,8 @@ Original prompt: Build and iterate the Normies Type Button web game, now global-
 - Lowered the desktop main modules and gave the footer more top spacing so the panels sit clear of the corner filigree background.
 - Changed the Global Leaderboard Presses stat chip to use the same grey family as the main button with light text on desktop and mobile.
 - Reduced the desktop header timer size and pinned the countdown bar to the bottom of the Type stack beside the final Type row.
+- Restored the desktop timer to the button stack below the button, placed the countdown bar under the timer, and shifted that stack right for more even button-side padding.
+- Changed the Country stat and Normie number field to explicit white surfaces, added grey text selection for the field, and replaced Live History square markers with Type glyph sprites.
 
 ## TODO
 - Configure the `NUMBER_LOG_KEY` Worker secret before using the private `/number-log` endpoint.
