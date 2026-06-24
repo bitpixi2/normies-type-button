@@ -469,7 +469,7 @@ export function App() {
             )}
 
             <div className="number-help">
-              They will show when the next round starts!
+              They will replace their same Type in the countdown on next turn.
             </div>
           </section>
 

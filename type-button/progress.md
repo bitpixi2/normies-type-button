@@ -40,6 +40,8 @@ Original prompt: Build and iterate the Normies Type Button web game, now global-
 - Reduced the desktop header timer size and pinned the countdown bar to the bottom of the Type stack beside the final Type row.
 - Restored the desktop timer to the button stack below the button, placed the countdown bar under the timer, and shifted that stack right for more even button-side padding.
 - Changed the Country stat and Normie number field to explicit white surfaces, added grey text selection for the field, and replaced Live History square markers with Type glyph sprites.
+- Updated the Send In Normie # helper copy to clarify that submitted Normies replace the matching Type image on the next turn.
+- Normalized the Type glyph PNG sprites to an equal visible height with transparent padding so Live History icons no longer look clipped or uneven.
 
 ## TODO
 - Configure the `NUMBER_LOG_KEY` Worker secret before using the private `/number-log` endpoint.
