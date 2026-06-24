@@ -88,6 +88,26 @@ input {
   opacity: 0.2;
 }
 
+.cursor-trail {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.cursor-trail-pixel {
+  position: absolute;
+  width: var(--trail-size);
+  height: var(--trail-size);
+  background: #111111;
+  box-shadow:
+    1px 1px 0 #ffffff,
+    var(--trail-shadow-offset-x) var(--trail-shadow-offset-y) 0 #8d8d8d;
+  image-rendering: pixelated;
+  opacity: var(--trail-opacity);
+  transform: translate(var(--trail-offset-x), var(--trail-offset-y));
+}
+
 h1,
 h2,
 h3,
@@ -286,7 +306,7 @@ h2 {
 
 .arena-header {
   display: grid;
-  grid-template-columns: minmax(180px, auto) minmax(0, 1fr);
+  grid-template-columns: 1fr;
   align-items: start;
   gap: 18px;
 }
@@ -299,7 +319,7 @@ h2 {
 }
 
 .type-readout {
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: flex-end;
   justify-self: end;
@@ -321,7 +341,7 @@ h2 {
 .button-console {
   display: grid;
   grid-template-columns: minmax(280px, 0.9fr) minmax(260px, 1fr);
-  align-items: center;
+  align-items: start;
   gap: 22px;
 }
 
@@ -338,7 +358,9 @@ h2 {
   align-items: center;
   gap: 10px;
   min-height: 66px;
+  margin-left: -40px;
   padding: 8px 10px;
+  padding-left: 50px;
   border: 2px solid var(--ink);
   background: #ffffff;
 }
@@ -355,7 +377,7 @@ h2 {
 
 .stack-arrow {
   position: absolute;
-  left: -40px;
+  left: 4px;
   display: grid;
   width: 34px;
   place-items: center;
@@ -363,7 +385,7 @@ h2 {
 }
 
 .stack-row.is-active .stack-arrow {
-  color: #111111;
+  color: #ffffff;
 }
 
 .stack-arrow svg {
@@ -422,7 +444,7 @@ h2 {
 .clock-shell {
   display: grid;
   justify-items: center;
-  gap: 22px;
+  gap: 14px;
 }
 
 .progress-track {
@@ -468,6 +490,26 @@ h2 {
   transition:
     transform 120ms ease,
     opacity 120ms ease;
+}
+
+@media (min-width: 981px) {
+  .button-core {
+    order: 1;
+    justify-self: center;
+    width: 245px;
+    height: 245px;
+  }
+
+  .clock {
+    order: 2;
+  }
+
+  .progress-track {
+    order: 3;
+    justify-self: start;
+    width: min(360px, 100%);
+    transform: translateX(12px);
+  }
 }
 
 .button-core:hover:not(:disabled) {
@@ -714,7 +756,8 @@ h2 {
 .stat-chip-wide {
   grid-column: 1 / -1;
   min-height: 42px;
-  color: var(--ink);
+  background: #111111;
+  color: #ffffff;
 }
 
 .history-run,
@@ -944,8 +987,7 @@ h2 {
   }
 
   .stack-row.is-active {
-    background:
-      linear-gradient(90deg, #ffffff 0 34px, #111111 34px 100%);
+    background: #111111;
   }
 
   .stack-arrow {

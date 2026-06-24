@@ -7,6 +7,8 @@ const TYPE_IMAGES_STORAGE_KEY = "typeImages";
 const TYPE_IMAGE_SVG_STORAGE_PREFIX = "typeImageSvg:";
 const MAX_SUBMITTED_NUMBER = 9999;
 const NUMBER_LOG_LIMIT = 250;
+const PRESS_THROTTLE_MS = 15 * 1000;
+const REPEATED_TIMING_LIMIT = 3;
 const NORMIES_API_BASE = "https://api.normies.art";
 const PUBLIC_API_BASE = "https://normies-type-button-api.deviantclaw.workers.dev";
 const TYPES = ["Human", "Cat", "Alien", "Agent", "Zombie"];
@@ -150,6 +152,17 @@ export class ArenaObject {
       return this.stateForVisitor(round, visitorId, now);
     }
 
+    const location = requestLocation(request);
+    const throttleKeys = pressThrottleKeys(visitorId, location.ipAddress);
+    if (await this.isPressThrottled(throttleKeys, now)) {
+      return this.stateForVisitor(round, visitorId, now);
+    }
+    const timingKeys = pressTimingKeys(visitorId, location.ipAddress);
+    const timingBucket = pressTimingBucket(round.expiresAt, now);
+    if (await this.isRepeatedTimingBlocked(timingKeys, timingBucket)) {
+      return this.stateForVisitor(round, visitorId, now);
+    }
+
     const pressKey = pressStorageKey(round.roundId, visitorId);
     const existingPress = await this.state.storage.get(pressKey);
     if (existingPress) {
@@ -172,10 +185,9 @@ export class ArenaObject {
       timestamp: new Date(now).toISOString(),
       visitorTag: visitorTag(visitorId)
     };
-    const nextRound = {
+    const pressedRound = {
       ...round,
       status: "active",
-      expiresAt: now + ROUND_MS,
       totalPresses: round.totalPresses + 1,
       pressCounts: {
         ...round.pressCounts,
@@ -188,11 +200,66 @@ export class ArenaObject {
     await this.logPressEvent({
       ...press,
       pressKey,
-      ...requestLocation(request)
+      ...location
     });
+    await this.markPressThrottle(throttleKeys, now);
+    await this.markPressTiming(timingKeys, timingBucket);
     const recentPresses = await this.addHistoryPress(press);
+    const nextRound = await this.createActiveRound(
+      round.roundId + 1,
+      now,
+      pressedRound
+    );
     await this.saveRound(nextRound);
     return this.stateForVisitor(nextRound, visitorId, now, recentPresses);
+  }
+
+  async isPressThrottled(keys, now) {
+    for (const key of keys) {
+      const lastPressAt = await this.state.storage.get(key);
+      if (
+        typeof lastPressAt === "number" &&
+        now - lastPressAt < PRESS_THROTTLE_MS
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  async markPressThrottle(keys, now) {
+    await Promise.all(keys.map((key) => this.state.storage.put(key, now)));
+  }
+
+  async isRepeatedTimingBlocked(keys, timingBucket) {
+    for (const key of keys) {
+      const value = await this.state.storage.get(key);
+      if (
+        value &&
+        typeof value === "object" &&
+        value.bucket === timingBucket &&
+        value.count >= REPEATED_TIMING_LIMIT
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  async markPressTiming(keys, timingBucket) {
+    await Promise.all(
+      keys.map(async (key) => {
+        const value = await this.state.storage.get(key);
+        const count =
+          value && typeof value === "object" && value.bucket === timingBucket
+            ? Number(value.count) + 1
+            : 1;
+        await this.state.storage.put(key, {
+          bucket: timingBucket,
+          count
+        });
+      })
+    );
   }
 
   async submitNumber(visitorId, submittedNumber) {
@@ -866,6 +933,26 @@ function visitorTag(visitorId) {
 
 function pressStorageKey(roundId, visitorId) {
   return `press:${roundId}:${visitorId}`;
+}
+
+function pressThrottleKeys(visitorId, ipAddress) {
+  const keys = [`pressThrottle:visitor:${visitorId}`];
+  if (ipAddress) {
+    keys.push(`pressThrottle:ip:${ipAddress}`);
+  }
+  return keys;
+}
+
+function pressTimingKeys(visitorId, ipAddress) {
+  const keys = [`pressTiming:visitor:${visitorId}`];
+  if (ipAddress) {
+    keys.push(`pressTiming:ip:${ipAddress}`);
+  }
+  return keys;
+}
+
+function pressTimingBucket(expiresAt, now) {
+  return Math.max(0, expiresAt - now);
 }
 
 function requestLocation(request) {

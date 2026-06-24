@@ -30,6 +30,10 @@ Original prompt: Build and iterate the Normies Type Button web game, now global-
 - Increased only the upper-left and upper-right background filigree render size so their shorter source crops visually match the lower corner sprites.
 - Added a backend-only submitted token log in the Arena Durable Object SQLite storage. Each Send In # submission now records token ID, owner from the Normies owner API at submission time, visitor tag, round, and timestamp; a private `/number-log` endpoint can read recent rows when `NUMBER_LOG_KEY` is configured.
 - Replaced the main button up/down raster assets with the supplied `Button2Up.png` and `Button2down.png` sprites for both desktop and mobile button states.
+- Added a desktop-only pixel cursor trail and tightened the desktop HUD: removed the large header Type readout, stacked button/timer/bar, pulled the bar left, extended Type rows around the arrow, and inverted the global lead bar.
+- Changed the active Type row on desktop and mobile to a full black selected background with a white moving arrow.
+- Changed press handling so an accepted press immediately closes the current global round and starts the next one for everyone; the old post-press wait/cooldown UI was removed.
+- Added backend abuse protection for accepted presses: a 15-second visitor/IP throttle to stop rapid Human farming, plus a repeated exact millisecond timing detector that blocks a visitor/IP after the same round-offset timing is seen 3 times.
 
 ## TODO
 - Configure the `NUMBER_LOG_KEY` Worker secret before using the private `/number-log` endpoint.
