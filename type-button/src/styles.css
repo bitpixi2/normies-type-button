@@ -590,6 +590,29 @@ h2 {
   background-size: 100% 100%;
 }
 
+.button-action-label {
+  position: absolute;
+  top: 42%;
+  left: 50%;
+  z-index: 1;
+  display: grid;
+  max-width: 120px;
+  min-height: 1em;
+  transform: translate(-50%, -50%);
+  place-items: center;
+  color: #ffffff;
+  font-size: 1.2rem;
+  line-height: 0.9;
+  pointer-events: none;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.button-core:active:not(:disabled) .button-action-label,
+.button-core.is-pressed .button-action-label {
+  color: #111111;
+}
+
 .button-core:focus-visible,
 .icon-button:focus-visible {
   outline: 3px solid #111111;
@@ -778,6 +801,7 @@ h2 {
   padding: 8px 10px;
   border: 2px solid var(--ink);
   background: #ffffff;
+  color: var(--ink);
   font-size: 0.88rem;
   line-height: 1.05;
   text-transform: uppercase;
@@ -791,16 +815,16 @@ h2 {
 }
 
 .stat-chip span {
-  color: var(--muted);
+  color: var(--ink);
 }
 
 .stat-chip:first-child {
   background: #a6a6a6;
-  color: #ffffff;
+  color: #111111;
 }
 
 .stat-chip:first-child span {
-  color: #ffffff;
+  color: #111111;
 }
 
 .stat-chip:nth-child(2) {
@@ -829,7 +853,7 @@ h2 {
 .history-run,
 .empty-state {
   display: grid;
-  grid-template-columns: 36px minmax(74px, 1fr) auto;
+  grid-template-columns: 52px minmax(74px, 1fr) auto;
   align-items: center;
   gap: 10px;
   min-height: 48px;
@@ -847,6 +871,7 @@ h2 {
 .history-times {
   display: grid;
   gap: 2px;
+  min-width: 0;
 }
 
 .history-main span,
@@ -871,9 +896,10 @@ h2 {
 }
 
 .history-type-glyph {
-  width: 34px;
+  width: 48px;
   height: 34px;
   object-fit: contain;
+  place-self: center;
   image-rendering: pixelated;
   filter: grayscale(1) contrast(1.2);
 }
@@ -1082,6 +1108,24 @@ h2 {
     height: 46px;
   }
 
+  .button-action-label {
+    top: 39%;
+    transform: translate(-50%, -50%);
+    color: #ffffff;
+    font-size: 1.08rem;
+    text-shadow:
+      1px 1px 0 #111111,
+      -1px 1px 0 #111111,
+      1px -1px 0 #111111,
+      -1px -1px 0 #111111;
+  }
+
+  .button-core:active:not(:disabled) .button-action-label,
+  .button-core.is-pressed .button-action-label {
+    color: #111111;
+    text-shadow: none;
+  }
+
   .scoreboard {
     gap: 10px;
     padding: 16px;
@@ -1103,7 +1147,7 @@ h2 {
   }
 
   .history-run {
-    grid-template-columns: 10px minmax(66px, 1fr) auto;
+    grid-template-columns: 56px minmax(0, 1fr) auto;
     min-height: 42px;
     padding: 7px 8px;
     font-size: 0.82rem;
@@ -1153,9 +1197,9 @@ h2 {
     display: inline;
   }
 
-  .run-dot {
-    width: 8px;
-    height: 8px;
+  .history-type-glyph {
+    width: 52px;
+    height: 34px;
   }
 
   .stack-row {
