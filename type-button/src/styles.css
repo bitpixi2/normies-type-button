@@ -60,7 +60,10 @@ input {
 
 .app::before {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100dvh;
   z-index: 0;
   pointer-events: none;
   background-image:
@@ -846,15 +849,15 @@ h2 {
 
   .app::before {
     background-position:
-      left -24px top 4px,
-      right -24px top 4px,
-      left -26px bottom 4px,
-      right -26px bottom 4px;
+      left calc(env(safe-area-inset-left, 0px) + 6px) top calc(env(safe-area-inset-top, 0px) + 6px),
+      right calc(env(safe-area-inset-right, 0px) + 6px) top calc(env(safe-area-inset-top, 0px) + 6px),
+      left calc(env(safe-area-inset-left, 0px) + 6px) bottom calc(env(safe-area-inset-bottom, 0px) + 6px),
+      right calc(env(safe-area-inset-right, 0px) + 6px) bottom calc(env(safe-area-inset-bottom, 0px) + 6px);
     background-size:
-      112px auto,
-      112px auto,
-      75px auto,
-      75px auto;
+      min(26vw, 96px) auto,
+      min(26vw, 96px) auto,
+      min(18vw, 66px) auto,
+      min(18vw, 66px) auto;
     opacity: 0.15;
   }
 
