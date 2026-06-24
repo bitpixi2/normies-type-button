@@ -30,6 +30,8 @@ const HISTORY_VISIBLE_LIMIT = 5;
 const MOBILE_HISTORY_VISIBLE_LIMIT = 3;
 const HISTORY_FLASH_MS = 900;
 const BUTTON_TAP_FEEDBACK_MS = 180;
+const HAPTIC_STRONG_PATTERN = [35, 24, 35];
+const HAPTIC_SOFT_TAP_MS = 6;
 type InfoModal = "terms" | "privacy" | null;
 
 const configuredIdlePauseMs = Number.parseInt(
@@ -256,15 +258,14 @@ export function App() {
   };
 
   const handleResume = () => {
+    triggerSoftHaptic();
     setIsIdlePaused(false);
     resetIdleTimer();
     void syncArenaState();
   };
 
   const triggerButtonFeedback = () => {
-    if ("vibrate" in navigator) {
-      navigator.vibrate(20);
-    }
+    triggerHaptic(HAPTIC_STRONG_PATTERN);
 
     if (tapTimeoutRef.current !== null) {
       window.clearTimeout(tapTimeoutRef.current);
@@ -280,6 +281,7 @@ export function App() {
   const handleNumberSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (isNumberBusy) return;
+    triggerSoftHaptic();
 
     const parsedNumber = normalizeNormieIdInput(numberInput);
     if (parsedNumber === null) {
@@ -435,7 +437,9 @@ export function App() {
                   aria-describedby={numberError ? "round-number-error" : undefined}
                   aria-invalid={numberError ? "true" : "false"}
                   inputMode="text"
+                  onFocus={triggerSoftHaptic}
                   onChange={(event) => {
+                    triggerSoftHaptic();
                     setNumberInput(event.target.value);
                     if (numberError) setNumberError("");
                   }}
@@ -502,21 +506,44 @@ export function App() {
       <footer className="site-footer" aria-label="Site links">
         <span>
           Made by{" "}
-          <a href="https://bitpixi.com" rel="noreferrer" target="_blank">
+          <a
+            href="https://bitpixi.com"
+            onPointerDown={triggerSoftHaptic}
+            rel="noreferrer"
+            target="_blank"
+          >
             bitpixi
           </a>
         </span>
-        <button type="button" onClick={() => setInfoModal("terms")}>
+        <button
+          type="button"
+          onClick={() => {
+            triggerSoftHaptic();
+            setInfoModal("terms");
+          }}
+        >
           Terms
         </button>
-        <button type="button" onClick={() => setInfoModal("privacy")}>
+        <button
+          type="button"
+          onClick={() => {
+            triggerSoftHaptic();
+            setInfoModal("privacy");
+          }}
+        >
           Privacy
         </button>
-        <a href="https://github.com/bitpixi2" rel="noreferrer" target="_blank">
+        <a
+          href="https://github.com/bitpixi2"
+          onPointerDown={triggerSoftHaptic}
+          rel="noreferrer"
+          target="_blank"
+        >
           GitHub
         </a>
         <a
           href="https://github.com/bitpixi2/normies-button"
+          onPointerDown={triggerSoftHaptic}
           rel="noreferrer"
           target="_blank"
         >
@@ -565,7 +592,14 @@ function InfoDialog({
           <h2 id="info-dialog-title">
             {isPrivacy ? "Privacy Policy" : "Terms"}
           </h2>
-          <button type="button" onClick={onClose} aria-label="Close">
+          <button
+            type="button"
+            onClick={() => {
+              triggerSoftHaptic();
+              onClose();
+            }}
+            aria-label="Close"
+          >
             Close
           </button>
         </div>
@@ -630,6 +664,18 @@ function historyPressKey(press: ArenaPress): string {
 
 function typeGlyphSrc(type: string): string {
   return `/assets/type-${type.toLowerCase()}-glyph.png`;
+}
+
+function triggerSoftHaptic() {
+  triggerHaptic(HAPTIC_SOFT_TAP_MS);
+}
+
+function triggerHaptic(pattern: number | number[]) {
+  if (typeof navigator === "undefined" || !("vibrate" in navigator)) {
+    return;
+  }
+
+  navigator.vibrate(pattern);
 }
 
 function formatSubmittedNumber(value: number): string {
