@@ -161,7 +161,7 @@ export function App() {
   );
   const actionLabel = buttonLabel(arena);
   const visibleButtonLabel =
-    arena.status === "active" && arena.visitorPressed ? "Wait" : "";
+    arena.status === "active" && arena.visitorPressed ? "Wait" : "Press";
 
   useEffect(() => {
     const renderGameToText = () =>

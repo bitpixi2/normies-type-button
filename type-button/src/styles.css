@@ -720,7 +720,7 @@ h2 {
   }
 
   .brand-logo {
-    width: min(190px, 66vw);
+    width: min(208px, 72vw);
   }
 
   .brand-logo-title {
@@ -730,38 +730,29 @@ h2 {
   .arena {
     min-height: auto;
     align-content: start;
-    gap: 14px;
-    padding: 18px;
+    gap: 8px;
+    padding: 16px 14px;
   }
 
   .type-readout {
-    justify-content: center;
-    justify-self: center;
-    font-size: 1.85rem;
-    gap: 8px;
-    text-align: center;
-  }
-
-  .active-type-glyph {
-    width: 36px;
-    height: 36px;
+    display: none;
   }
 
   .arena-header {
     grid-template-columns: 1fr;
-    gap: 4px;
+    gap: 0;
   }
 
   .clock {
-    font-size: 2.9rem;
+    font-size: 2.25rem;
     text-align: center;
   }
 
   .button-core {
     order: 1;
     justify-self: center;
-    width: 176px;
-    height: 176px;
+    width: 188px;
+    height: 188px;
   }
 
   .generated-button-sprite {
@@ -776,11 +767,13 @@ h2 {
   .progress-track {
     order: 3;
     width: min(100%, 360px);
+    height: 10px;
   }
 
   .clock-shell {
     order: 1;
-    gap: 10px;
+    gap: 4px;
+    margin-top: -4px;
   }
 
   .clock-shell .clock {
@@ -790,16 +783,24 @@ h2 {
   .stack-wrap {
     order: 2;
     padding-left: 34px;
+    gap: 6px;
   }
 
   .stack-row {
     grid-template-columns: 46px minmax(58px, 1fr) 76px 28px;
     min-height: 60px;
     gap: 8px;
+    margin-left: -28px;
+    padding-left: 36px;
+  }
+
+  .stack-row.is-active {
+    background:
+      linear-gradient(90deg, #ffffff 0 34px, #111111 34px 100%);
   }
 
   .stack-arrow {
-    left: -35px;
+    left: -7px;
     width: 30px;
   }
 
@@ -819,9 +820,15 @@ h2 {
   }
 
   .button-action-label {
-    top: 42%;
+    top: 39%;
     transform: translate(-50%, -50%);
-    font-size: 1rem;
+    color: #ffffff;
+    font-size: 1.08rem;
+    text-shadow:
+      1px 1px 0 #111111,
+      -1px 1px 0 #111111,
+      1px -1px 0 #111111,
+      -1px -1px 0 #111111;
   }
 
   .scoreboard {
@@ -903,17 +910,19 @@ h2 {
   }
 
   .stack-row {
-    min-height: 54px;
-    padding: 6px 8px;
+    min-height: 48px;
+    padding-top: 4px;
+    padding-right: 7px;
+    padding-bottom: 4px;
   }
 
   .stack-row strong {
-    font-size: 1rem;
+    font-size: 0.92rem;
   }
 
   .stack-row span,
   .stack-row em {
-    font-size: 0.78rem;
+    font-size: 0.66rem;
   }
 
   .normie-tile,
