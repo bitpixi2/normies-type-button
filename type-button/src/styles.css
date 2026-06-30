@@ -960,7 +960,7 @@ h2 {
 }
 
 .stat-chip:first-child {
-  background: #a6a6a6;
+  background: #ffffff;
   color: #111111;
 }
 
@@ -983,7 +983,7 @@ h2 {
   gap: 8px;
   grid-column: 1 / -1;
   min-height: 42px;
-  background: #a6a6a6;
+  background: #ffffff;
   color: #111111;
   line-height: 1.25;
   white-space: nowrap;
