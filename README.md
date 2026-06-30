@@ -2,7 +2,7 @@
 
 <img src="type-button/docs/images/normies-button-arena.png" alt="Normies Button live arena screenshot" width="100%">
 
-**Normies Button** turns the collection's `Type` trait into a live multiplayer timing ritual. Everyone sees the same global round. Wait for your favorite Type (Human, Cat, Alien, Agent, or Zombie) then press the button. Top-pressed Type at Round 10,000 wins forever! Created and submitted by bitpixi for the Normies Hackathon on June 30th, 2026. Inspired by Reddit's "The Button" game by Josh Wardle in 2015.
+**Normies Button** turns the collection's `Type` trait into a live multiplayer timing ritual. Everyone sees the same global round. Wait for your favorite Type (Human, Cat, Alien, Agent, or Zombie) then press the button. Top-pressed Type at Round 10,000 wins forever! Inspired by Reddit's "The Button" game by Josh Wardle in 2015. Created and submitted by bitpixi for the Normies Hackathon on June 30th, 2026.
 
 [---> Play the live demo](https://normies-type-button.pages.dev/)
 
@@ -18,9 +18,7 @@
 | `0:24-0:13` | Agent |
 | `0:12-0:01` | Zombie |
 
-If nobody presses before zero, the round rolls on. If someone presses, the next global round starts immediately.
-
-Round `10000` is the final playable round. When it ends, the button freezes and declares the ultimate winning Type by total presses. It's estimated that round `10000` could complete around 7 July, 2026 (1 week). Accepted presses can end rounds early, so the real finale could arrive sooner.
+If nobody presses before zero, the round rolls on. If someone presses, the next global round starts immediately. Round `10000` is the final playable round. When it ends, the button freezes and declares the ultimate winning Type by total presses. It's estimated that round `10000` could complete around 7 July, 2026 (1 week). Accepted presses can end rounds early, so the real finale could arrive sooner.
 
 ## User Flow
 
@@ -118,6 +116,6 @@ Every sound in Normies Button is custom and agentically generated in the app wit
 
 ## Marketing
 
-Much of the Normies audience, besides four brave peope, told me they didn’t want to connect their wallets directly to my first Normies Hackathon entry [Scribblies](https://scribblies.deviantclaw.art/), so I listened. I started building games with no wallet connection required, and made this YouTube-thumbnail-style image using ChatGPT Pro and Google Gemini to tell that story. Thank you for considering me, and good luck to everyone! ~ bitpixi.eth
+Much of the Normies audience (besides four brave peope) told me they didn’t want to connect wallets to my first Hackathon entry [Scribblies](https://scribblies.deviantclaw.art/), so I listened. I started building 'Normies Button' with no wallet connection required, and made this YouTube-thumbnail image using ChatGPT Pro and Google Gemini to tell that story. Thank you for considering me, and good luck to everyone! ~ bitpixi.eth
 
 <center><img src="type-button/docs/images/button.jpeg" alt="Normies Button regret button" width="100%">
