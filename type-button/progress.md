@@ -63,6 +63,9 @@ Original prompt: Build and iterate the Normies Type Button web game, now global-
 - Added generated link transition sound effects: link-like actions play an upward whoosh at sound-effect volume, while modal Close/overlay dismiss plays a downward whoosh.
 - Restored the background chiptune to the preferred 10% mix and earlier square/triangle texture, while keeping the sharp duplicate octave layer removed.
 - Removed the main button press sound from the audio toggle; turning audio on now only starts the background music.
+- Raised background music to 25% of sound-effect gain and changed invalid Normie ID feedback to temporarily replace the Send In helper text until the input is valid again.
+- Removed mobile button press flicker by preloading/rendering the up and pressed button sprites as stacked layers instead of swapping the background image on touch.
+- Tightened mobile layout: countdown number/bar sit closer to the Type stack, the bar stretches to the Type row width, Type rows extend slightly left, Live History content is nudged up/left, and the audio toggle now starts audio from touch pointerdown.
 
 ## TODO
 - Configure the `NUMBER_LOG_KEY` Worker secret before using the private `/number-log` endpoint.

@@ -42,7 +42,7 @@ const HAPTIC_STRONG_PATTERN = [35, 24, 35];
 const HAPTIC_SOFT_TAP_MS = 6;
 const AUDIO_STORAGE_KEY = "normies-button:audio-enabled";
 const SOUND_EFFECT_MASTER_GAIN = 0.2;
-const BACKGROUND_MUSIC_GAIN_RATIO = 0.1;
+const BACKGROUND_MUSIC_GAIN_RATIO = 0.25;
 const BACKGROUND_MUSIC_STEP_MS = 240;
 type InfoModal = "terms" | "privacy" | null;
 
@@ -81,6 +81,7 @@ export function App() {
   const musicTimerRef = useRef<number | null>(null);
   const musicGainRef = useRef<GainNode | null>(null);
   const musicStepRef = useRef(0);
+  const audioPointerToggleRef = useRef(false);
 
   const syncArenaState = useCallback(async () => {
     try {
@@ -383,23 +384,49 @@ export function App() {
   };
 
   const handleAudioToggle = () => {
+    if (audioPointerToggleRef.current) {
+      audioPointerToggleRef.current = false;
+      return;
+    }
     triggerSoftHaptic();
-    setIsAudioEnabled((current) => {
-      const next = !current;
-      writeAudioPreference(next);
-      if (next) {
-        startBackgroundMusic(
-          true,
-          audioContextRef,
-          musicTimerRef,
-          musicGainRef,
-          musicStepRef
-        );
-      } else {
-        stopBackgroundMusic(musicTimerRef, musicGainRef);
-      }
-      return next;
-    });
+    const next = !isAudioEnabled;
+    writeAudioPreference(next);
+    setIsAudioEnabled(next);
+    if (next) {
+      startBackgroundMusic(
+        true,
+        audioContextRef,
+        musicTimerRef,
+        musicGainRef,
+        musicStepRef
+      );
+    } else {
+      stopBackgroundMusic(musicTimerRef, musicGainRef);
+    }
+  };
+
+  const handleAudioPointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (event.pointerType !== "touch" && event.pointerType !== "pen") return;
+    audioPointerToggleRef.current = true;
+    window.setTimeout(() => {
+      audioPointerToggleRef.current = false;
+    }, 500);
+    event.preventDefault();
+    triggerSoftHaptic();
+    const next = !isAudioEnabled;
+    writeAudioPreference(next);
+    setIsAudioEnabled(next);
+    if (next) {
+      startBackgroundMusic(
+        true,
+        audioContextRef,
+        musicTimerRef,
+        musicGainRef,
+        musicStepRef
+      );
+    } else {
+      stopBackgroundMusic(musicTimerRef, musicGainRef);
+    }
   };
 
   const handleNumberSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -557,6 +584,7 @@ export function App() {
               aria-pressed={!isAudioEnabled}
               className="audio-toggle"
               onClick={handleAudioToggle}
+              onPointerDown={handleAudioPointerDown}
               type="button"
             >
               <img
@@ -580,14 +608,17 @@ export function App() {
                 <input
                   id="round-number"
                   autoComplete="off"
-                  aria-describedby={numberError ? "round-number-error" : undefined}
+                  aria-describedby="round-number-help"
                   aria-invalid={numberError ? "true" : "false"}
                   inputMode="text"
                   onFocus={triggerSoftHaptic}
                   onChange={(event) => {
+                    const nextValue = event.target.value;
                     triggerSoftHaptic();
-                    setNumberInput(event.target.value);
-                    if (numberError) setNumberError("");
+                    setNumberInput(nextValue);
+                    if (numberError && normalizeNormieIdInput(nextValue) !== null) {
+                      setNumberError("");
+                    }
                   }}
                   pattern="#?[0-9]*"
                   type="text"
@@ -599,16 +630,16 @@ export function App() {
                 </button>
               </div>
             </form>
-            {numberError && (
-              <div className="number-error" id="round-number-error" role="alert">
-                {numberError}
-              </div>
-            )}
 
-            <div className="number-help">
-              {isFinale
-                ? "Finale locked. Submitted Normies are closed."
-                : "They will replace their same Type in the countdown area."}
+            <div
+              className={`number-help ${numberError ? "is-error" : ""}`}
+              id="round-number-help"
+              role={numberError ? "alert" : undefined}
+            >
+              {numberError ||
+                (isFinale
+                  ? "Finale locked. Submitted Normies are closed."
+                  : "They will replace their same Type in the countdown area.")}
             </div>
           </section>
 
