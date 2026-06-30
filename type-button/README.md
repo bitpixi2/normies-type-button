@@ -115,6 +115,16 @@ The Worker keeps the room honest:
 [#] no landing page; the game is the first screen
 ```
 
+## Custom Audio
+
+Every sound in Normies Button is custom and agentically generated in the app with Web Audio. There are no stock sound files hiding in the bundle; the browser synthesizes the music and effects live.
+
+- **Normies Button Background Song:** a soft looping chiptune bed with layers that enter and drop away over time.
+- **Button Press:** alternating arcade button thocks for the main press interaction.
+- **Send in Normie:** a charm-like sparkle when a submitted Normie is accepted.
+- **Link Open:** an upward whoosh for link-style navigation.
+- **Link Close:** a downward whoosh for closing the Terms/Privacy panel.
+
 ## Tech Stack
 
 - React 19 + TypeScript + Vite
