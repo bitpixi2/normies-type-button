@@ -55,6 +55,7 @@ Original prompt: Build and iterate the Normies Type Button web game, now global-
 - Updated both READMEs to use the live arena screenshot as the full-width hero and moved the regret-button image to the bottom at half width. The live Round header now reads `Round N / 10,000` beside the audio toggle.
 - Changed the global lead strip from light-on-dark to button-grey with dark text and added the leading Type glyph before the lead sentence.
 - Changed the lead/stat copy to use `total press/presses`, simplified the submitted Normie helper copy, made finale history fall back to the SQL press log if needed, added alternating button press sounds, and added a sprinkle/charm sound after successful Normie submissions.
+- Updated Terms to describe immediate shared rounds and current abuse safeguards. Finale winner rows now keep the arrow/selected state, and the desktop Ultimate Winner panel stretches to match the full Type stack height with wider side gutters.
 
 ## TODO
 - Configure the `NUMBER_LOG_KEY` Worker secret before using the private `/number-log` endpoint.

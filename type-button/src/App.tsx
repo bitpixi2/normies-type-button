@@ -194,6 +194,7 @@ export function App() {
     : arena.status === "active"
       ? activeType ?? "None"
       : "Ready";
+  const finaleWinnerTypes = isFinale ? arena.finale?.winners ?? [] : [];
   const activeTypeGlyph = activeType ? typeGlyphSrc(activeType) : null;
   const progress =
     isFinale
@@ -398,18 +399,20 @@ export function App() {
             </div>
           </div>
 
-          <div className="button-console">
+          <div className={`button-console ${isFinale ? "is-finale" : ""}`}>
             <div className="stack-wrap" aria-label="Type stack">
               {TYPE_WINDOWS.map((window) => {
                 const typeImage = arena.typeImages[window.type];
                 const isActive = activeType === window.type;
+                const isFinaleWinner = finaleWinnerTypes.includes(window.type);
+                const isSelected = isActive || isFinaleWinner;
                 const typePressCount = arena.pressCounts[window.type] ?? 0;
                 return (
                   <div
-                    className={`stack-row ${isActive ? "is-active" : ""}`}
+                    className={`stack-row ${isSelected ? "is-active" : ""}`}
                     key={window.type}
                   >
-                    {isActive && (
+                    {isSelected && (
                       <span className="stack-arrow" aria-hidden="true">
                         <PixelArrow />
                       </span>
@@ -790,9 +793,15 @@ function TermsCopy() {
         Normies hackathon.
       </p>
       <p>
-        Use it normally: press once per round, send in a Normie number if you
-        want it considered for the next round, and do not attack, spam, scrape,
-        or interfere with the service.
+        Use it normally: each accepted press records one Type selection and
+        immediately starts the next shared round for everyone. Submitted Normie
+        numbers may replace their matching Type image in the countdown area.
+      </p>
+      <p>
+        Do not attack, spam, scrape, automate rapid clicks, or interfere with
+        the service. The game uses one-press-per-round checks, a short rapid
+        click throttle, and repeated exact-timing abuse checks to keep play
+        fair.
       </p>
       <p>
         The app is provided as-is for play and judging. It may change, reset, or

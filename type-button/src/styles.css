@@ -622,11 +622,33 @@ h2 {
     gap: clamp(24px, 2.6vw, 38px);
   }
 
+  .button-console.is-finale {
+    grid-template-columns: minmax(280px, 0.98fr) minmax(260px, 0.82fr);
+    align-items: stretch;
+    gap: clamp(32px, 3vw, 48px);
+  }
+
   .clock-shell {
     justify-items: center;
     align-content: center;
     gap: 8px;
     transform: translateX(clamp(30px, 2.5vw, 38px));
+  }
+
+  .button-console.is-finale .clock-shell {
+    align-self: stretch;
+    align-content: stretch;
+    justify-self: stretch;
+    justify-items: stretch;
+    padding-inline: clamp(10px, 1.2vw, 18px);
+    transform: none;
+  }
+
+  .button-console.is-finale .finale-panel {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    padding-inline: clamp(24px, 2.2vw, 34px);
   }
 
   .button-core {
