@@ -42,7 +42,7 @@ const HAPTIC_STRONG_PATTERN = [35, 24, 35];
 const HAPTIC_SOFT_TAP_MS = 6;
 const AUDIO_STORAGE_KEY = "normies-button:audio-enabled";
 const SOUND_EFFECT_MASTER_GAIN = 0.2;
-const BACKGROUND_MUSIC_GAIN_RATIO = 0.08;
+const BACKGROUND_MUSIC_GAIN_RATIO = 0.1;
 const BACKGROUND_MUSIC_STEP_MS = 240;
 type InfoModal = "terms" | "privacy" | null;
 
@@ -1161,8 +1161,8 @@ function playBackgroundMusicStep(
     destination,
     frequency,
     startedAt,
-    phraseStep % 4 === 0 ? "triangle" : "sine",
-    0.11,
+    phraseStep % 4 === 0 ? "square" : "triangle",
+    0.15,
     BACKGROUND_MUSIC_STEP_MS / 1000 - 0.02
   );
 
@@ -1172,8 +1172,8 @@ function playBackgroundMusicStep(
       destination,
       bass[Math.floor(phraseStep / 4) % bass.length],
       startedAt,
-      "triangle",
-      0.065,
+      "square",
+      0.08,
       BACKGROUND_MUSIC_STEP_MS / 1000 * 2
     );
   }
@@ -1184,9 +1184,9 @@ function playBackgroundMusicStep(
       destination,
       harmony[Math.floor(phraseStep / 4) % harmony.length],
       startedAt,
-      "sine",
-      0.03,
-      BACKGROUND_MUSIC_STEP_MS / 1000 * 0.8
+      "triangle",
+      0.055,
+      BACKGROUND_MUSIC_STEP_MS / 1000
     );
   }
 }
@@ -1207,10 +1207,10 @@ function playMusicNote(
   oscillator.type = type;
   oscillator.frequency.setValueAtTime(frequency, startedAt);
   gain.gain.setValueAtTime(0.001, startedAt);
-  gain.gain.exponentialRampToValueAtTime(peakGain, startedAt + 0.03);
+  gain.gain.exponentialRampToValueAtTime(peakGain, startedAt + 0.018);
   gain.gain.exponentialRampToValueAtTime(
     0.001,
-    Math.max(startedAt + 0.08, stopAt - 0.05)
+    Math.max(startedAt + 0.04, stopAt - 0.03)
   );
 
   oscillator.connect(gain).connect(destination);
