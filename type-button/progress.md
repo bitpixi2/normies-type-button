@@ -47,6 +47,7 @@ Original prompt: Build and iterate the Normies Type Button web game, now global-
 - Centered the desktop Normies Button logo inside the arena module and tuned the desktop button/timer/bar column position to avoid sitting too far right or too far left.
 - Wrapped remaining visible numeric values such as Round and lead-margin numbers in the number font, removed the arena status/result bar on desktop and mobile, reduced Live History to latest 3 rows on all viewports, and kept the lead sentence on one white line.
 - Added a Live History "More" link that opens the public backend `/state` JSON in a new tab so the tracked recentPresses history can be inspected beyond the visible 3 rows.
+- Removed stale reference/screenshot PNGs from the tracked repo, moved desktop modules lower with the footer closer to the viewport bottom, clarified Privacy copy for submitted Normie ID owner lookup, and added a footer link to Normie #2613.
 
 ## TODO
 - Configure the `NUMBER_LOG_KEY` Worker secret before using the private `/number-log` endpoint.

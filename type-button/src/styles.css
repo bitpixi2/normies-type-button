@@ -59,11 +59,12 @@ input {
   }
 
   .layout {
-    margin-top: clamp(34px, 4.5vh, 58px);
+    margin-top: clamp(58px, 7.5vh, 92px);
   }
 
   .site-footer {
-    margin-top: clamp(28px, 3.4vh, 42px);
+    align-self: end;
+    margin-top: clamp(56px, 7vh, 88px);
   }
 }
 

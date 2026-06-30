@@ -534,6 +534,16 @@ export function App() {
           >
             bitpixi
           </a>
+          {" - "}
+          Normie{" "}
+          <a
+            href="https://opensea.io/item/ethereum/0x9eb6e2025b64f340691e424b7fe7022ffde12438/2613"
+            onPointerDown={triggerSoftHaptic}
+            rel="noreferrer"
+            target="_blank"
+          >
+            #2613
+          </a>
         </span>
         <button
           type="button"
@@ -657,7 +667,10 @@ function PrivacyCopy() {
       <p>
         When you send in a Normie ID, the backend stores that ID, the resolved
         owner wallet, Type, replacement image data, the round, timestamp, and
-        visitor tag. The app does not ask for your name, email, or wallet.
+        visitor tag. The owner wallet comes from the Normies API at submission
+        time and does not necessarily mean the wallet owner is the person who
+        entered the Normie ID. The app does not ask for your name, email, or
+        wallet.
       </p>
     </div>
   );
