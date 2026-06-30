@@ -1220,7 +1220,7 @@ export function formatGlobalLeadCopy(stats: ArenaState["stats"]): string {
     .map((entry) => entry.type);
 
   if (tiedTypes.length > 1) {
-    return `${formatTypeList(tiedTypes)} are tied at ${topCount} total ${pluralizePress(topCount)}`;
+    return `${formatTypeList(tiedTypes)} tied at ${topCount}...`;
   }
 
   return `${pluralizeType(tiedTypes[0])} leading by ${stats.leadMargin} total ${pluralizePress(stats.leadMargin)}`;
@@ -1260,10 +1260,9 @@ function renderGlobalLeadCopy(
     return (
       <>
         <LeadTypeGlyphs types={tiedTypes} />
-        <span>
-          {formatTypeList(tiedTypes)} are tied at{" "}
-          <span className="number-text">{topCount}</span>{" "}
-          total {pluralizePress(topCount)}
+        <span className="lead-copy-text">
+          {formatTypeList(tiedTypes)} tied at{" "}
+          <span className="number-text">{topCount}</span>...
         </span>
       </>
     );
@@ -1272,7 +1271,7 @@ function renderGlobalLeadCopy(
   return (
     <>
       <LeadTypeGlyphs types={tiedTypes} />
-      <span>
+      <span className="lead-copy-text">
         {pluralizeType(tiedTypes[0])} leading by{" "}
         <span className="number-text">{stats.leadMargin}</span>{" "}
         total {pluralizePress(stats.leadMargin)}

@@ -58,7 +58,7 @@ describe("Global leaderboard copy", () => {
         leadingCount: 6,
         leadMargin: 0
       })
-    ).toBe("Humans and Cats are tied at 6 total presses");
+    ).toBe("Humans and Cats tied at 6...");
   });
 
   it("reports no leader before any global presses", () => {

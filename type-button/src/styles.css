@@ -1005,6 +1005,7 @@ h2 {
   gap: 8px;
   grid-column: 1 / -1;
   min-height: 42px;
+  min-width: 0;
   background: #ffffff;
   color: #111111;
   line-height: 1.25;
@@ -1023,6 +1024,12 @@ h2 {
   height: 24px;
   object-fit: contain;
   image-rendering: pixelated;
+}
+
+.lead-copy-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .stat-chip-wide .number-text {
