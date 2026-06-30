@@ -85,6 +85,27 @@ flowchart TB
 - the game is the first screen and mobile-responsive!
 ```
 
+## Mobile Responsive
+
+The mobile layout keeps the button, countdown, Type stack, submissions, leaderboard, and live history viewable within a short scroll. It is the same global game surface as desktop: every press, Type count, submitted Normie, country stat, and history row is connected in realtime to the Cloudflare Worker + Durable Object backend.
+
+Sound is generated in-browser with Web Audio. It works on modern browsers after audio is enabled, though some mobile browsers may still limit or block sound depending on their autoplay/audio policies.
+
+<p>
+  <img src="type-button/docs/images/mobile-arena.jpg" alt="Normies Button mobile arena view" width="49%">
+  <img src="type-button/docs/images/mobile-stats.jpg" alt="Normies Button mobile leaderboard and history view" width="49%">
+</p>
+
+## Custom Audio
+
+Every sound in Normies Button is custom and agentically generated in the app with Web Audio. There are no stock sound files hiding in the bundle; the browser synthesizes the music and effects live.
+
+- **Normies Button Background Song:** a looping chiptune bed with layers that enter and drop away over time.
+- **Button Press:** alternating arcade button thocks for the main press interaction.
+- **Send in Normie:** a charm-like sparkle when a submitted Normie is accepted.
+- **Link Open:** an upward whoosh for link-style navigation.
+- **Link Close:** a downward whoosh for closing the Terms/Privacy panel.
+
 ## Tech Stack
 
 ```txt

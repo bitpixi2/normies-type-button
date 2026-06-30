@@ -66,6 +66,8 @@ Original prompt: Build and iterate the Normies Type Button web game, now global-
 - Raised background music to 25% of sound-effect gain and changed invalid Normie ID feedback to temporarily replace the Send In helper text until the input is valid again.
 - Removed mobile button press flicker by preloading/rendering the up and pressed button sprites as stacked layers instead of swapping the background image on touch.
 - Tightened mobile layout: countdown number/bar sit closer to the Type stack, the bar stretches to the Type row width, Type rows extend slightly left, Live History content is nudged up/left, and the audio toggle now starts audio from touch pointerdown.
+- Rolled the main button sprite press state back to the original direct background-image swap because the layered mobile pressed state did not feel right on device.
+- Added two mobile screenshots to the README under a "Mobile Responsive" section with short-scroll, realtime backend, and mobile browser audio-policy notes.
 
 ## TODO
 - Configure the `NUMBER_LOG_KEY` Worker secret before using the private `/number-log` endpoint.

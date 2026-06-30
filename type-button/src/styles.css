@@ -694,39 +694,19 @@ h2 {
 .generated-button-sprite {
   position: absolute;
   inset: -12px;
-  isolation: isolate;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  contain: paint;
-  filter: grayscale(1) contrast(1.14);
-  image-rendering: pixelated;
-}
-
-.generated-button-sprite::before,
-.generated-button-sprite::after {
-  position: absolute;
-  inset: 0;
-  content: "";
+  background-image: url("/assets/button-stack-generated.png");
   background-position: center;
   background-repeat: no-repeat;
   background-size: 100% 100%;
+  filter: grayscale(1) contrast(1.14);
   image-rendering: pixelated;
-  pointer-events: none;
+  transition: background-size 120ms steps(2, end);
 }
 
-.generated-button-sprite::before {
-  background-image: url("/assets/button-stack-generated.png");
-}
-
-.generated-button-sprite::after {
+.button-core:active:not(:disabled) .generated-button-sprite,
+.button-core.is-pressed .generated-button-sprite {
   background-image: url("/assets/button-stack-pressed-generated.png");
-  opacity: 0;
-  transition: opacity 80ms steps(1, end);
-}
-
-.button-core:active:not(:disabled) .generated-button-sprite::after,
-.button-core.is-pressed .generated-button-sprite::after {
-  opacity: 1;
+  background-size: 100% 100%;
 }
 
 .button-action-label {
@@ -1262,11 +1242,12 @@ h2 {
     height: 188px;
   }
 
-  .generated-button-sprite::before {
+  .generated-button-sprite {
     background-image: url("/assets/button-stack-mobile-transparent.png");
   }
 
-  .generated-button-sprite::after {
+  .button-core:active:not(:disabled) .generated-button-sprite,
+  .button-core.is-pressed .generated-button-sprite {
     background-image: url("/assets/button-stack-pressed-mobile-transparent.png");
   }
 
