@@ -5,11 +5,11 @@
 ```txt
 +------------------------------------------------------------+
 |  NORMIES BUTTON                                            |
-|  one shared timer. five Type windows. one irreversible tap. |
+|  Wait for your favorite Type, then press the button.        |
 +------------------------------------------------------------+
 ```
 
-**A global one-minute button game for the Normies Hackathon.**
+**A global multi-player button game for the Normies Hackathon. May the favorite Type win!**
 
 [Play the live demo](https://normies-type-button.pages.dev/) | [Normies API](https://api.normies.art) | [Live JSON state](https://normies-type-button-api.deviantclaw.workers.dev/state)
 
@@ -18,11 +18,11 @@ Normies Button turns the collection's `Type` trait into a live timing ritual. Ev
 Inspired by Reddit's [The Button](https://en.wikipedia.org/wiki/The_Button_(Reddit)): a shared countdown where waiting changed what you became. Normies Button remixes that pressure with Normies Type windows.
 
 ```txt
-          1:00 -> Human  \
-          0:48 -> Cat     > the brave wait
-          0:36 -> Alien  /
-          0:24 -> Agent  \
-          0:12 -> Zombie  > the final twelve seconds bite back
+          1:00-0:49 -> Human
+          0:48-0:37 -> Cat
+          0:36-0:25 -> Alien
+          0:24-0:13 -> Agent
+          0:12-0:01 -> Zombie
 ```
 
 ## What It Is
