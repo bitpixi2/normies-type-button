@@ -74,6 +74,7 @@ export function App() {
   const tapTimeoutRef = useRef<number | null>(null);
   const idleTimeoutRef = useRef<number | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const buttonSoundVariantRef = useRef(0);
 
   const syncArenaState = useCallback(async () => {
     try {
@@ -309,7 +310,9 @@ export function App() {
 
   const triggerButtonFeedback = () => {
     triggerHaptic(HAPTIC_STRONG_PATTERN);
-    playButtonPressSound(isAudioEnabled, audioContextRef);
+    const soundVariant = buttonSoundVariantRef.current;
+    buttonSoundVariantRef.current = (buttonSoundVariantRef.current + 1) % 2;
+    playButtonPressSound(isAudioEnabled, audioContextRef, soundVariant);
 
     if (tapTimeoutRef.current !== null) {
       window.clearTimeout(tapTimeoutRef.current);
@@ -328,7 +331,7 @@ export function App() {
       const next = !current;
       writeAudioPreference(next);
       if (next) {
-        playButtonPressSound(true, audioContextRef);
+        playButtonPressSound(true, audioContextRef, 0);
       }
       return next;
     });
@@ -351,6 +354,7 @@ export function App() {
       const state = await submitRoundNumber(visitorId, parsedNumber);
       setArena(state);
       setNumberInput("");
+      playNormieSubmitSound(isAudioEnabled, audioContextRef);
     } catch {
       setNumberError("That's not a valid Normies ID #, mate!");
     } finally {
@@ -537,7 +541,7 @@ export function App() {
             <div className="number-help">
               {isFinale
                 ? "Finale locked. Submitted Normies are closed."
-                : "They will replace their same Type in the countdown on next turn."}
+                : "They will replace their same Type in the countdown area."}
             </div>
           </section>
 
@@ -843,20 +847,11 @@ function writeAudioPreference(isEnabled: boolean) {
 
 function playButtonPressSound(
   isEnabled: boolean,
-  audioContextRef: MutableRefObject<AudioContext | null>
+  audioContextRef: MutableRefObject<AudioContext | null>,
+  variant: number
 ) {
-  if (!isEnabled || typeof window === "undefined") return;
-
-  const AudioContextConstructor =
-    window.AudioContext ||
-    (window as unknown as { webkitAudioContext?: typeof AudioContext })
-      .webkitAudioContext;
-  if (!AudioContextConstructor) return;
-
-  const context =
-    audioContextRef.current ??
-    new AudioContextConstructor({ latencyHint: "interactive" });
-  audioContextRef.current = context;
+  const context = getAudioContext(isEnabled, audioContextRef);
+  if (!context) return;
 
   const startedAt = context.currentTime;
   const clickOscillator = context.createOscillator();
@@ -865,18 +860,31 @@ function playButtonPressSound(
   const bodyGain = context.createGain();
   const masterGain = context.createGain();
 
-  clickOscillator.type = "square";
-  clickOscillator.frequency.setValueAtTime(820, startedAt);
-  clickOscillator.frequency.exponentialRampToValueAtTime(220, startedAt + 0.035);
+  const isAlternate = variant % 2 === 1;
+  clickOscillator.type = isAlternate ? "sawtooth" : "square";
+  clickOscillator.frequency.setValueAtTime(isAlternate ? 690 : 820, startedAt);
+  clickOscillator.frequency.exponentialRampToValueAtTime(
+    isAlternate ? 260 : 220,
+    startedAt + 0.035
+  );
   clickGain.gain.setValueAtTime(0.001, startedAt);
-  clickGain.gain.exponentialRampToValueAtTime(0.11, startedAt + 0.004);
+  clickGain.gain.exponentialRampToValueAtTime(
+    isAlternate ? 0.085 : 0.11,
+    startedAt + 0.004
+  );
   clickGain.gain.exponentialRampToValueAtTime(0.001, startedAt + 0.055);
 
-  bodyOscillator.type = "triangle";
-  bodyOscillator.frequency.setValueAtTime(145, startedAt);
-  bodyOscillator.frequency.exponentialRampToValueAtTime(72, startedAt + 0.09);
+  bodyOscillator.type = isAlternate ? "sine" : "triangle";
+  bodyOscillator.frequency.setValueAtTime(isAlternate ? 118 : 145, startedAt);
+  bodyOscillator.frequency.exponentialRampToValueAtTime(
+    isAlternate ? 84 : 72,
+    startedAt + 0.09
+  );
   bodyGain.gain.setValueAtTime(0.001, startedAt);
-  bodyGain.gain.exponentialRampToValueAtTime(0.18, startedAt + 0.008);
+  bodyGain.gain.exponentialRampToValueAtTime(
+    isAlternate ? 0.14 : 0.18,
+    startedAt + 0.008
+  );
   bodyGain.gain.exponentialRampToValueAtTime(0.001, startedAt + 0.12);
 
   masterGain.gain.setValueAtTime(0.2, startedAt);
@@ -890,6 +898,60 @@ function playButtonPressSound(
   bodyOscillator.start(startedAt);
   clickOscillator.stop(startedAt + 0.06);
   bodyOscillator.stop(startedAt + 0.13);
+}
+
+function playNormieSubmitSound(
+  isEnabled: boolean,
+  audioContextRef: MutableRefObject<AudioContext | null>
+) {
+  const context = getAudioContext(isEnabled, audioContextRef);
+  if (!context) return;
+
+  const startedAt = context.currentTime;
+  const masterGain = context.createGain();
+  masterGain.gain.setValueAtTime(0.18, startedAt);
+  masterGain.gain.exponentialRampToValueAtTime(0.001, startedAt + 0.34);
+  masterGain.connect(context.destination);
+
+  [880, 1174.66, 1567.98, 2093].forEach((frequency, index) => {
+    const noteStart = startedAt + index * 0.045;
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+
+    oscillator.type = index % 2 === 0 ? "triangle" : "sine";
+    oscillator.frequency.setValueAtTime(frequency, noteStart);
+    oscillator.frequency.exponentialRampToValueAtTime(
+      frequency * 1.08,
+      noteStart + 0.07
+    );
+
+    gain.gain.setValueAtTime(0.001, noteStart);
+    gain.gain.exponentialRampToValueAtTime(0.09, noteStart + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.001, noteStart + 0.14);
+
+    oscillator.connect(gain).connect(masterGain);
+    oscillator.start(noteStart);
+    oscillator.stop(noteStart + 0.16);
+  });
+}
+
+function getAudioContext(
+  isEnabled: boolean,
+  audioContextRef: MutableRefObject<AudioContext | null>
+) {
+  if (!isEnabled || typeof window === "undefined") return null;
+
+  const AudioContextConstructor =
+    window.AudioContext ||
+    (window as unknown as { webkitAudioContext?: typeof AudioContext })
+      .webkitAudioContext;
+  if (!AudioContextConstructor) return null;
+
+  const context =
+    audioContextRef.current ??
+    new AudioContextConstructor({ latencyHint: "interactive" });
+  audioContextRef.current = context;
+  return context;
 }
 
 function historyPressKey(press: ArenaPress): string {
@@ -954,7 +1016,7 @@ function GlobalStats({ stats: rawStats }: { stats: ArenaState["stats"] }) {
       <div className="global-stats">
         <div className="stat-chip">
           <strong>{stats.totalPresses.toLocaleString()}</strong>
-          <span>{pluralizePress(stats.totalPresses)}</span>
+          <span>total {pluralizePress(stats.totalPresses)}</span>
         </div>
         <div className="stat-chip">
           <strong>{stats.countryCount.toLocaleString()}</strong>

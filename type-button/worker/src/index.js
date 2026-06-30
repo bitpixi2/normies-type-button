@@ -341,12 +341,15 @@ export class ArenaObject {
         : round.expiresAt
           ? secondsRemaining(round.expiresAt, now)
           : ROUND_SECONDS;
-    const history = normalizeHistory(
+    let history = normalizeHistory(
       recentPresses || (await this.getHistory()),
       round
     );
     const pendingNumber = await this.getPendingNumber();
     const stats = this.readPressStats();
+    if (round.status === "finale" && history.length === 0 && stats.totalPresses > 0) {
+      history = normalizeHistory(await this.readRecentPressHistory(), round);
+    }
     const typeImages = await this.getTypeImages();
     const finale =
       round.status === "finale"
@@ -669,6 +672,26 @@ export class ArenaObject {
     ];
 
     return { presses: rows };
+  }
+
+  async readRecentPressHistory(limit = HISTORY_LIMIT) {
+    this.ensurePressEventTable();
+
+    return [
+      ...this.state.storage.sql.exec(
+        `SELECT
+          round_id AS roundId,
+          type,
+          seconds_remaining AS secondsRemaining,
+          seconds_waited AS secondsWaited,
+          visitor_tag AS visitorTag,
+          pressed_at AS timestamp
+        FROM press_event_log
+        ORDER BY id DESC
+        LIMIT ?`,
+        limit
+      )
+    ];
   }
 
   assertNumberLogAccess(request) {
