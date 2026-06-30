@@ -11,7 +11,7 @@
 
 **A global one-minute button game for the Normies Hackathon.**
 
-[Play the live demo](https://normiesbutton.deviantclaw.art) | [Normies API](https://api.normies.art) | [Live JSON state](https://normies-type-button-api.deviantclaw.workers.dev/state)
+[Play the live demo](https://normies-type-button.pages.dev/) | [Normies API](https://api.normies.art) | [Live JSON state](https://normies-type-button-api.deviantclaw.workers.dev/state)
 
 Normies Button turns the collection's `Type` trait into a live timing ritual. Everyone sees the same global round. Wait for your favorite Type, then press the button.
 
@@ -155,29 +155,7 @@ flowchart TB
 - Normies API integration
 - Vitest coverage for timing, scoring, API fallbacks, and formatting helpers
 
-## Commands
-
-```bash
-npm install
-npm run dev
-npm test
-npm run build
-```
-
-## Deploy
-
-```bash
-npm run deploy
-```
-
-This deploys the Worker API first, then the Cloudflare Pages frontend.
-
-```txt
-+-------------------------------+
-|  PRESS LOG SAYS:              |
-|  "I regret it."               |
-|  "Good. That means it worked." |
-+-------------------------------+
-```
-
 <img src="type-button/docs/images/button.jpeg" alt="Normies Button regret button" width="50%">
+
+If you make a YouTube video playing Normies Button, I would love that. Please
+feel free to use this thumbnail; I would be so appreciative.
